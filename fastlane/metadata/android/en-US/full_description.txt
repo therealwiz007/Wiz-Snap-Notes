@@ -1,0 +1,29 @@
+Wiz Snap Notes turns every site photo into a clear, searchable report. It is built for petrol pump staff, managers and field teams who need proof of what they saw and a quick way to send it.
+
+HOW IT WORKS
+1. Tap Snap and take the photo.
+2. Type a header, for example "HPCL Sector 12, Tank 2 dip". The header is required and is printed across the top of the photo with the date and time.
+3. Write your points in Notes. They are printed across the bottom of the photo.
+4. Add one or more dealer email IDs if you want, then tap Save & Mail. Gmail opens with the recipients, subject, notes and photo filled in. You tap Send.
+
+SEARCH EVERYTHING YOU WROTE
+Every photo note goes into the built-in gallery. Type any word, like "leak", "nozzle 3" or a dealer name, and the matching photos appear instantly with the words highlighted. Filter by Today, 7 days or 30 days, or tap a saved header.
+
+SAVED TO YOUR GALLERY
+The stamped photo is also saved to your phone gallery in Pictures/Wiz Snap Notes, so you can share it on WhatsApp or upload it anywhere.
+
+MADE FOR DAILY WORK
+- Recent headers as one-tap chips, so you never retype a site name
+- Email autocomplete from dealers you mailed before
+- "Add point" button for neat bullet notes
+- Live preview of the stamp while you type
+- Pinch to zoom on any saved photo
+- Share to any app, or delete when done
+
+PRIVATE AND OFFLINE
+No sign-in, no ads, no tracking. The app has no internet permission. Your photos and notes stay on your phone. Mail is sent by your own mail app only when you tap Send.
+
+LIGHT AND SMOOTH
+The black-and-yellow Wiz design is animated but light on battery and memory, so it runs well on low-cost phones.
+
+Wiz Snap Notes is made by Wiz Labs, makers of Wiz Dip Charts, Wiz Fuel Density and Wiz GPS Camera.

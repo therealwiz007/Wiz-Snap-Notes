@@ -1,0 +1,16 @@
+<resources>
+    <color name="wiz_bg">#0B0D10</color>
+    <color name="wiz_yellow">#FFC400</color>
+    <string name="app_name">Snap Notes</string>
+
+    <!-- Dark window background so there is no white flash before the first frame. -->
+    <style name="Theme.WizSnapNotes" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/wiz_bg</item>
+    </style>
+
+    <style name="Theme.Wiz.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/wiz_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.WizSnapNotes</item>
+    </style>
+</resources>

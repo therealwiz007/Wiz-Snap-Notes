@@ -1,0 +1,14 @@
+.gradle/
+build/
+app/build/
+local.properties
+.idea/
+*.iml
+.kotlin/
+.DS_Store
+dist/
+Wiz Snap Notes (*.apk)
+*.jks
+*.keystore
+*.apk
+*.aab
