@@ -1,5 +1,8 @@
 package com.wizlabs.snapnotes
 
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.animation.core.VisibilityThreshold
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -131,7 +134,12 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit, 
                             modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                         )
                     }
-                    itemsIndexed(list, key = { _, it -> it.id }) { i, n -> NoteCard(n, terms, i) { onOpen(n.id) } }
+                    itemsIndexed(list, key = { _, it -> it.id }, contentType = { _, _ -> "note" }) { i, n ->
+                        // Cards glide to their new places and fade in/out as the search narrows or widens.
+                        Box(Modifier.animateItem(fadeInSpec = tween(180), placementSpec = spring(dampingRatio = 1f, stiffness = 400f, visibilityThreshold = IntOffset.VisibilityThreshold), fadeOutSpec = tween(120))) {
+                            NoteCard(n, terms, i) { onOpen(n.id) }
+                        }
+                    }
                 }
             }
         }

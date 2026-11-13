@@ -386,7 +386,7 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
 @Composable
 private fun SavedBurst() {
     val s = remember { Animatable(0.3f) }
-    LaunchedEffect(Unit) { s.animateTo(1f, spring(dampingRatio = 0.42f, stiffness = Spring.StiffnessMediumLow)) }
+    LaunchedEffect(Unit) { s.animateTo(1f, spring(dampingRatio = 0.5f, stiffness = 700f)) /* one-shot, ≈400 ms */ }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             Modifier.size(92.dp).graphicsLayer { scaleX = s.value; scaleY = s.value }.clip(CircleShape).background(WizAccent),

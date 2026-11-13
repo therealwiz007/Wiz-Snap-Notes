@@ -12,8 +12,10 @@ android {
         applicationId = "com.wizlabs.snapnotes"
         minSdk = 29
         targetSdk = 36
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 3
+        versionName = "1.2.0"
+        // Ship only English resources (drops dozens of unused library translations).
+        resourceConfigurations += listOf("en")
     }
 
     buildTypes {
@@ -44,6 +46,8 @@ android {
 dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2025.02.00")
     implementation(composeBom)
+    // Installs bundled baseline profiles on sideloaded installs too: faster start, smoother first scrolls.
+    implementation("androidx.profileinstaller:profileinstaller:1.4.0")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
     implementation("androidx.compose.ui:ui")

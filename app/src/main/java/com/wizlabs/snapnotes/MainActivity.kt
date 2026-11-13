@@ -1,5 +1,7 @@
 package com.wizlabs.snapnotes
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.LaunchedEffect
 import android.os.Bundle
 import android.webkit.WebView
 import androidx.activity.ComponentActivity
@@ -63,7 +65,12 @@ class MainActivity : ComponentActivity() {
         // Leftover raw captures from a closed editor are never needed again.
         cacheDir.listFiles { f -> f.name.startsWith("snap_raw_") }?.forEach { it.delete() }
         DriveBackup.init(this)
-        setContent { WizTheme { App() } }
+        setContent { WizTheme { ProvideWizMotion { App() } } }
+    }
+
+    override fun dispatchTouchEvent(ev: android.view.MotionEvent): Boolean {
+        if (ev.actionMasked == android.view.MotionEvent.ACTION_DOWN) MotionIdle.onTouch()
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onStart() {
@@ -78,7 +85,10 @@ private fun App() {
     var screen by remember { mutableStateOf<Screen>(Screen.Home) }
     val context = LocalContext.current
 
-    BackHandler(enabled = screen != Screen.Home && screen !is Screen.Editor) { screen = Screen.Home }
+    WizBackHandler(screen.toString(), enabled = screen != Screen.Home && screen !is Screen.Editor) { screen = Screen.Home }
+    val peek = LocalBackPeek.current
+    // Once the back transition has played, drop the peek so the next visit starts full size.
+    LaunchedEffect(screen) { kotlinx.coroutines.delay(650); if (peek != null && !peek.dragging) peek.reset() }
 
     AnimatedContent(
         targetState = screen,
@@ -89,6 +99,8 @@ private fun App() {
         },
         label = "screen"
     ) { s ->
+      // Camera preview is a SurfaceView, which ignores layer transforms: no peek there.
+      Box(if (s == Screen.Camera) Modifier.fillMaxSize() else Modifier.fillMaxSize().backPeek(s.toString())) {
         when (s) {
             Screen.Home -> HomeScreen(
                 onSnap = { screen = Screen.Camera },
@@ -110,6 +122,7 @@ private fun App() {
             Screen.About -> AboutScreen(onBack = { screen = Screen.Home })
             Screen.Backup -> BackupScreen(onBack = { screen = Screen.Home })
         }
+      }
     }
 }
 

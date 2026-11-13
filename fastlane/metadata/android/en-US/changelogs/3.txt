@@ -1,0 +1,5 @@
+Wiz Snap Notes 1.2.0:
+• Predictive back: screens shrink as you swipe back
+• Notes glide into place as you search
+• Snappier saved animation
+• Faster start, smaller download, animations rest when idle to save battery

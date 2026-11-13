@@ -15,6 +15,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -49,9 +53,33 @@ object WizMotion {
             context.getSystemService(PowerManager::class.java)?.isPowerSaveMode != true
 }
 
-/** System setting only (animations on, Battery Saver off), re-checked when Battery Saver flips. */
+/** App-wide system-motion flag, computed once in [ProvideWizMotion] (one Battery Saver receiver for the app). */
+val LocalSystemMotion = staticCompositionLocalOf<Boolean?> { null }
+
+/** Touch counter fed by MainActivity.dispatchTouchEvent; decorative loops settle 9 s after the last touch. */
+object MotionIdle {
+    const val SETTLE_NS = 9_000_000_000L
+    var touches by mutableIntStateOf(0)
+        private set
+    private var lastBump = 0L
+    fun onTouch() {
+        val now = System.nanoTime()
+        if (now - lastBump > 1_000_000_000L) { lastBump = now; touches++ }
+    }
+}
+
 @Composable
-fun rememberSystemMotion(): Boolean {
+fun ProvideWizMotion(content: @Composable () -> Unit) {
+    val system = systemMotionReceiver()
+    CompositionLocalProvider(LocalSystemMotion provides system, LocalBackPeek provides remember { BackPeek() }, content = content)
+}
+
+/** System setting only (animations on, Battery Saver off). Reads the app-wide flag when provided. */
+@Composable
+fun rememberSystemMotion(): Boolean = LocalSystemMotion.current ?: systemMotionReceiver()
+
+@Composable
+private fun systemMotionReceiver(): Boolean {
     val context = LocalContext.current
     var allowed by remember { mutableStateOf(WizMotion.systemAllows(context)) }
     DisposableEffect(context) {
@@ -94,16 +122,20 @@ fun rememberMotionAllowed(): Boolean {
 @Composable
 fun rememberThrottledClock(running: Boolean, fps: Int = 30): State<Float> {
     val t = remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(running, fps) {
+    val touches = MotionIdle.touches
+    LaunchedEffect(running, fps, touches) {
         if (!running) return@LaunchedEffect
-        val frameMs = (1000L / fps).coerceAtLeast(16L)
-        var last = System.nanoTime()
-        while (true) {
-            delay(frameMs)
-            val now = System.nanoTime()
-            // Clamp the step so a long pause doesn't make the art jump.
-            t.floatValue += ((now - last) / 1e9f).coerceAtMost(0.1f)
-            last = now
+        // delay + vsync wait ≈ the requested fps; stops on a still frame 9 s after the last touch.
+        val pause = (1000L / fps - 8L).coerceAtLeast(8L)
+        val start = System.nanoTime()
+        var last = -1L
+        while (System.nanoTime() - start < MotionIdle.SETTLE_NS) {
+            withFrameNanos { now ->
+                // Clamp the step so a long pause doesn't make the art jump.
+                if (last >= 0) t.floatValue += ((now - last) / 1e9f).coerceAtMost(0.1f)
+                last = now
+            }
+            delay(pause)
         }
     }
     return t
@@ -127,8 +159,12 @@ fun Modifier.pressScale(interaction: InteractionSource, pressedScale: Float = 0.
 fun Modifier.enterRise(index: Int, rise: Float = 22f, gapMs: Long = 55L): Modifier = composed {
     val system = rememberSystemMotion()
     val p = remember { Animatable(if (system) 0f else 1f) }
+    val born = remember { System.nanoTime() }
     LaunchedEffect(Unit) {
         if (p.value < 1f) {
+            // Busy phone (cold start): show content at once rather than leave the screen blank.
+            withFrameNanos { }
+            if (System.nanoTime() - born > 450_000_000L) { p.snapTo(1f); return@LaunchedEffect }
             delay(40L + index * gapMs)
             p.animateTo(1f, tween(460, easing = WizMotion.Emphasized))
         }
