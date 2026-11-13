@@ -12,6 +12,9 @@ Every photo note goes into the built-in gallery. Type any word, like "leak", "no
 SAVED TO YOUR GALLERY
 The stamped photo is also saved to your phone gallery in Pictures/Wiz Snap Notes, so you can share it on WhatsApp or upload it anywhere.
 
+BACK UP TO GOOGLE DRIVE (OPTIONAL)
+Sign in with Google and every photo note is copied to a "Wiz Snap Notes" folder in your own Drive, with the header and notes in the description so Drive search finds them. Choose Wi-Fi only to save mobile data. The app can only see the files it creates, never the rest of your Drive.
+
 MADE FOR DAILY WORK
 - Recent headers as one-tap chips, so you never retype a site name
 - Email autocomplete from dealers you mailed before
@@ -20,8 +23,8 @@ MADE FOR DAILY WORK
 - Pinch to zoom on any saved photo
 - Share to any app, or delete when done
 
-PRIVATE AND OFFLINE
-No sign-in, no ads, no tracking. The app has no internet permission. Your photos and notes stay on your phone. Mail is sent by your own mail app only when you tap Send.
+PRIVATE BY DESIGN
+No ads, no tracking, no Wiz Labs servers. Without Drive backup the app works fully offline and your photos and notes stay on your phone. Mail is sent by your own mail app only when you tap Send.
 
 LIGHT AND SMOOTH
 The black-and-yellow Wiz design is animated but light on battery and memory, so it runs well on low-cost phones.

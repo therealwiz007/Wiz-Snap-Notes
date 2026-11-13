@@ -1,8 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-feature android:name="android.hardware.camera.any" android:required="true" />
 
-    <!-- Camera only. No INTERNET: mail is handed to the user's own mail app. -->
+    <!-- Mail is handed to the user's own mail app. INTERNET is used only for the optional
+         Google Drive backup, which uploads straight to the user's own Drive. -->
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Lets the app find Gmail and other apps that can send the photo note. -->

@@ -1,0 +1,2 @@
+New: optional Google Drive backup. Sign in with Google and your photo notes are copied to a "Wiz Snap Notes" folder in your Drive, with Wi-Fi only mode.
+Fixed: Send Mail now opens Gmail directly.

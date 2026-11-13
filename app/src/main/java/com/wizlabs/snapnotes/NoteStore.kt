@@ -20,7 +20,9 @@ data class Note(
     /** Small preview in files/thumbs/, used by the grid so it stays light on memory. */
     val thumb: String,
     /** Copy in the phone gallery (Pictures/Wiz Snap Notes), if it was saved there. */
-    val galleryUri: String?
+    val galleryUri: String?,
+    /** Google Drive file id once the photo is backed up, else null. */
+    val driveId: String? = null
 )
 
 enum class DateRange(val label: String, val days: Int) {
@@ -32,7 +34,7 @@ enum class DateRange(val label: String, val days: Int) {
  * and recipients so search stays instant with thousands of photos. Everything stays on the phone.
  */
 class NoteStore private constructor(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "snapnotes.db", null, 1) {
+    SQLiteOpenHelper(context.applicationContext, "snapnotes.db", null, 2) {
 
     val notesDir = File(context.applicationContext.filesDir, "notes").apply { mkdirs() }
     val thumbsDir = File(context.applicationContext.filesDir, "thumbs").apply { mkdirs() }
@@ -51,7 +53,8 @@ class NoteStore private constructor(context: Context) :
                 emails TEXT NOT NULL,
                 file TEXT NOT NULL,
                 thumb TEXT NOT NULL,
-                gallery TEXT)"""
+                gallery TEXT,
+                drive_id TEXT)"""
         )
         db.execSQL("CREATE INDEX notes_created ON notes(created)")
         // unicode61 folds case for Hindi and other scripts too; fall back to the default tokenizer.
@@ -64,7 +67,9 @@ class NoteStore private constructor(context: Context) :
         db.execSQL("CREATE TABLE recipients(email TEXT PRIMARY KEY, used INTEGER NOT NULL, last INTEGER NOT NULL)")
     }
 
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        if (oldVersion < 2) db.execSQL("ALTER TABLE notes ADD COLUMN drive_id TEXT")
+    }
 
     fun insert(n: Note): Long {
         val db = writableDatabase
@@ -118,7 +123,7 @@ class NoteStore private constructor(context: Context) :
     }
 
     fun get(id: Long): Note? = readableDatabase.rawQuery(
-        "SELECT id, created, header, body, emails, file, thumb, gallery FROM notes WHERE id = ?",
+        "SELECT $COLS FROM notes WHERE id = ?",
         arrayOf(id.toString())
     ).use { c -> if (c.moveToFirst()) row(c) else null }
 
@@ -136,7 +141,7 @@ class NoteStore private constructor(context: Context) :
         }
         val terms = SearchText.terms(query)
         val useFts = terms.isNotEmpty() && terms.all { SearchText.isAscii(it) }
-        val sql = StringBuilder("SELECT n.id, n.created, n.header, n.body, n.emails, n.file, n.thumb, n.gallery FROM notes n")
+        val sql = StringBuilder("SELECT $N_COLS FROM notes n")
         if (useFts) {
             where.add(0, "n.id IN (SELECT docid FROM notes_fts WHERE notes_fts MATCH ?)")
             args.add(0, SearchText.ftsQuery(terms))
@@ -183,10 +188,33 @@ class NoteStore private constructor(context: Context) :
         emails = c.getString(4).split(',').filter { it.isNotBlank() },
         file = c.getString(5),
         thumb = c.getString(6),
-        galleryUri = c.getString(7)
+        galleryUri = c.getString(7),
+        driveId = c.getString(8)
     )
 
+    /** Oldest first, so the backlog uploads in the order the photos were taken. */
+    fun pendingBackup(limit: Int = 50): List<Note> = readableDatabase.rawQuery(
+        "SELECT $COLS FROM notes WHERE drive_id IS NULL ORDER BY created ASC LIMIT $limit", null
+    ).use { c -> buildList { while (c.moveToNext()) add(row(c)) } }
+
+    fun pendingCount(): Int = readableDatabase.rawQuery(
+        "SELECT COUNT(*) FROM notes WHERE drive_id IS NULL", null
+    ).use { if (it.moveToFirst()) it.getInt(0) else 0 }
+
+    fun setDriveId(id: Long, driveId: String?) {
+        writableDatabase.update("notes", ContentValues().apply { put("drive_id", driveId) }, "id = ?", arrayOf(id.toString()))
+        version++
+    }
+
+    /** Folder or account changed: everything has to go up again. */
+    fun clearDriveIds() {
+        writableDatabase.execSQL("UPDATE notes SET drive_id = NULL")
+        version++
+    }
+
     companion object {
+        private const val COLS = "id, created, header, body, emails, file, thumb, gallery, drive_id"
+        private const val N_COLS = "n.id, n.created, n.header, n.body, n.emails, n.file, n.thumb, n.gallery, n.drive_id"
         @Volatile private var instance: NoteStore? = null
         fun get(context: Context): NoteStore =
             instance ?: synchronized(this) { instance ?: NoteStore(context).also { instance = it } }

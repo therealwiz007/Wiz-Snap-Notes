@@ -9,7 +9,7 @@ dealer email IDs and tap **Save & Mail**: Gmail opens with the recipients, subje
 filled in, and you tap Send.
 
 - Package: `com.wizlabs.snapnotes` · launcher name **Snap Notes**
-- Offline. No INTERNET permission, no accounts, no ads, no analytics.
+- Works offline. INTERNET is used only for the optional Google Drive backup. No ads, no analytics.
 - Kotlin + Jetpack Compose, CameraX, plain SQLite with an FTS4 full-text index.
 
 ## Features
@@ -22,6 +22,22 @@ filled in, and you tap Send.
 - Gallery grid with instant search over headers, notes and recipients. Matching words are
   highlighted. Date filters (Today, 7 days, 30 days) and header chips.
 - Photo view with pinch-to-zoom, Send Mail, Share (WhatsApp, Drive…) and Delete.
+- Optional Google Drive backup (`drive.file` scope only) to a "Wiz Snap Notes" folder, with
+  auto backup after each save, Wi-Fi only mode and a retry queue that resumes when the phone is
+  back online.
+
+## Google sign-in setup
+
+Drive backup uses Google Identity Services (`play-services-auth`). It needs, in a Google Cloud
+project with the **Google Drive API** enabled:
+
+1. An OAuth consent screen with the `.../auth/drive.file` scope (non-sensitive, so no Google
+   verification review is needed) and the privacy policy URL below.
+2. One **Android** OAuth client for package `com.wizlabs.snapnotes` per signing certificate SHA-1:
+   the Play app-signing key, the upload key and the debug key.
+
+No client ID goes into the code. Without these clients, sign-in fails with "Google sign-in is
+not set up for this app build".
 
 ## Performance rules
 

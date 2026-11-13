@@ -12,8 +12,8 @@ android {
         applicationId = "com.wizlabs.snapnotes"
         minSdk = 29
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
     }
 
     buildTypes {
@@ -63,6 +63,9 @@ dependencies {
 
     implementation("androidx.exifinterface:exifinterface:1.4.0")
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Google sign-in for the optional Drive backup (drive.file scope only).
+    implementation("com.google.android.gms:play-services-auth:21.4.0")
 
     testImplementation("junit:junit:4.13.2")
 }

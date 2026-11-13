@@ -33,6 +33,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.CloudSync
+import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.PhotoCamera
@@ -76,7 +80,7 @@ import java.util.Locale
 import kotlin.math.sin
 
 @Composable
-fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit) {
+fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit, onBackup: () -> Unit) {
     val context = LocalContext.current
     val store = remember { NoteStore.get(context) }
     var query by rememberSaveable { mutableStateOf("") }
@@ -84,6 +88,7 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit) 
     var notes by remember { mutableStateOf<List<Note>?>(null) }
     var total by remember { mutableIntStateOf(0) }
     var headers by remember { mutableStateOf(emptyList<String>()) }
+    var pending by remember { mutableIntStateOf(0) }
     val terms = remember(query) { SearchText.terms(query) }
 
     LaunchedEffect(query, range, store.version) {
@@ -92,6 +97,7 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit) 
             Triple(store.search(query, range), store.count(), store.recentHeaders(8))
         }
         notes = list; total = count; headers = recent
+        pending = withContext(Dispatchers.IO) { store.pendingCount() }
     }
 
     val grid = rememberLazyGridState()
@@ -104,7 +110,7 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit) 
             verticalArrangement = Arrangement.spacedBy(12.dp),
             modifier = Modifier.fillMaxSize()
         ) {
-            item(span = { GridItemSpan(maxLineSpan) }, key = "hero") { Hero(total, onAbout) }
+            item(span = { GridItemSpan(maxLineSpan) }, key = "hero") { Hero(total, pending, onAbout, onBackup) }
             item(span = { GridItemSpan(maxLineSpan) }, key = "search") {
                 SearchBlock(query, { query = it }, range, { range = it }, headers)
             }
@@ -139,7 +145,7 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit) 
 }
 
 @Composable
-private fun Hero(total: Int, onAbout: () -> Unit) {
+private fun Hero(total: Int, pending: Int, onAbout: () -> Unit, onBackup: () -> Unit) {
     val motion = rememberMotionAllowed()
     val clock = rememberThrottledClock(running = motion, fps = 24)
     val density = LocalDensity.current
@@ -183,6 +189,8 @@ private fun Hero(total: Int, onAbout: () -> Unit) {
                 Spacer(Modifier.width(6.dp))
                 Text(if (total == 1) "photo note" else "photo notes", color = WizMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 2.dp))
             }
+            Spacer(Modifier.height(10.dp))
+            DrivePill(pending, onBackup)
         }
         Image(
             art, contentDescription = null,
@@ -198,6 +206,35 @@ private fun Hero(total: Int, onAbout: () -> Unit) {
         )
         IconButton(onClick = onAbout, modifier = Modifier.align(Alignment.TopEnd).padding(4.dp)) {
             Icon(Icons.Filled.Info, "About", tint = WizMuted, modifier = Modifier.size(20.dp))
+        }
+    }
+}
+
+/** Backup state at a glance; opens the Google Drive backup screen. */
+@Composable
+private fun DrivePill(pending: Int, onClick: () -> Unit) {
+    val email = DriveBackup.email
+    val status = DriveBackup.status
+    val (icon, label, tint) = when {
+        email == null -> Triple(Icons.Filled.CloudUpload, "Back up to Drive", WizAccent)
+        status is DriveBackup.Status.Uploading -> Triple(Icons.Filled.CloudSync, "Backing up ${status.done}/${status.total}", WizAccent)
+        status is DriveBackup.Status.Failed || status is DriveBackup.Status.NeedsSignIn -> Triple(Icons.Filled.CloudOff, "Backup paused", WizBad)
+        pending > 0 -> Triple(Icons.Filled.CloudSync, "$pending to back up", WizAccent)
+        else -> Triple(Icons.Filled.CloudDone, "Backed up", WizGood)
+    }
+    val interaction = remember { MutableInteractionSource() }
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(50),
+        color = tint.copy(alpha = .12f),
+        border = BorderStroke(1.dp, tint.copy(alpha = .35f)),
+        interactionSource = interaction,
+        modifier = Modifier.pressScale(interaction, 0.94f)
+    ) {
+        Row(Modifier.padding(horizontal = 10.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, null, tint = tint, modifier = Modifier.size(15.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(label, color = tint, style = MaterialTheme.typography.labelMedium, maxLines = 1)
         }
     }
 }
@@ -253,6 +290,12 @@ private fun NoteCard(n: Note, terms: List<String>, index: Int, onClick: () -> Un
         Column {
             Box(Modifier.fillMaxWidth().aspectRatio(0.82f).background(WizPanelHi)) {
                 img?.let { Image(it, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
+                if (n.driveId != null && n.driveId != "-" && DriveBackup.email != null) {
+                    Box(
+                        Modifier.align(Alignment.TopStart).padding(8.dp).size(26.dp).clip(CircleShape).background(WizGlass),
+                        contentAlignment = Alignment.Center
+                    ) { Icon(Icons.Filled.CloudDone, "Backed up to Google Drive", tint = WizGood, modifier = Modifier.size(15.dp)) }
+                }
                 if (n.emails.isNotEmpty()) {
                     Box(
                         Modifier.align(Alignment.TopEnd).padding(8.dp).size(26.dp).clip(CircleShape).background(WizGlass),

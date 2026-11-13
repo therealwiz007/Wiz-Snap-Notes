@@ -33,6 +33,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.CloudDone
+import androidx.compose.material.icons.filled.CloudQueue
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.AlertDialog
@@ -75,7 +77,7 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
     var note by remember { mutableStateOf<Note?>(null) }
     var missing by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
-    LaunchedEffect(id) {
+    LaunchedEffect(id, store.version) {
         note = withContext(Dispatchers.IO) { store.get(id) }
         missing = note == null
     }
@@ -92,6 +94,15 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
                 n?.let { Stamp.timeLabel(it.createdMs) } ?: "", color = WizMuted,
                 style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f)
             )
+            if (n != null && DriveBackup.email != null) {
+                val saved = n.driveId != null && n.driveId != "-"
+                Icon(
+                    if (saved) Icons.Filled.CloudDone else Icons.Filled.CloudQueue,
+                    if (saved) "Backed up to Google Drive" else "Waiting to back up",
+                    tint = if (saved) WizGood else WizMuted,
+                    modifier = Modifier.padding(end = 10.dp).size(22.dp)
+                )
+            }
             if (n != null) GlassIconButton(Icons.Filled.DeleteOutline, "Delete", { confirmDelete = true })
         }
         if (n == null) {
@@ -160,7 +171,7 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
             onDismissRequest = { confirmDelete = false },
             containerColor = WizPanel,
             title = { Text("Delete this photo note?", color = WizText) },
-            text = { Text("It is removed from Snap Notes and from Pictures/Wiz Snap Notes. This cannot be undone.", color = WizMuted) },
+            text = { Text("It is removed from Snap Notes and from Pictures/Wiz Snap Notes. This cannot be undone." + if (n?.driveId != null && n.driveId != "-") " The copy in your Google Drive stays." else "", color = WizMuted) },
             confirmButton = {
                 TextButton(onClick = {
                     confirmDelete = false

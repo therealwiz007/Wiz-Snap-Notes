@@ -49,6 +49,7 @@ sealed interface Screen {
     data class Editor(val raw: File) : Screen { override val depth = 2 }
     data class Detail(val id: Long) : Screen { override val depth = 1 }
     data object About : Screen { override val depth = 1 }
+    data object Backup : Screen { override val depth = 1 }
 }
 
 class MainActivity : ComponentActivity() {
@@ -61,7 +62,14 @@ class MainActivity : ComponentActivity() {
         )
         // Leftover raw captures from a closed editor are never needed again.
         cacheDir.listFiles { f -> f.name.startsWith("snap_raw_") }?.forEach { it.delete() }
+        DriveBackup.init(this)
         setContent { WizTheme { App() } }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Picks up anything that could not upload last time.
+        DriveBackup.sync(this)
     }
 }
 
@@ -85,7 +93,8 @@ private fun App() {
             Screen.Home -> HomeScreen(
                 onSnap = { screen = Screen.Camera },
                 onOpen = { screen = Screen.Detail(it) },
-                onAbout = { screen = Screen.About }
+                onAbout = { screen = Screen.About },
+                onBackup = { screen = Screen.Backup }
             )
             Screen.Camera -> CameraScreen(onBack = { screen = Screen.Home }, onCaptured = { screen = Screen.Editor(it) })
             is Screen.Editor -> EditorScreen(
@@ -93,11 +102,13 @@ private fun App() {
                 onCancel = { screen = Screen.Camera },
                 onSaved = { note, mail ->
                     screen = Screen.Detail(note.id)
+                    DriveBackup.sync(context)
                     if (mail) Mailer.mail(context, note)
                 }
             )
             is Screen.Detail -> DetailScreen(s.id, onBack = { screen = Screen.Home })
             Screen.About -> AboutScreen(onBack = { screen = Screen.Home })
+            Screen.Backup -> BackupScreen(onBack = { screen = Screen.Home })
         }
     }
 }
