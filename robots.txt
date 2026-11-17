@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://therealwiz007.github.io/Wiz-Snap-Notes/sitemap.xml

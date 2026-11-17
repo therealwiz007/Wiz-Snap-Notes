@@ -1,23 +1,37 @@
-Wiz Snap Notes turns every site photo into a clear, searchable report. It is built for petrol pump staff, managers and field teams who need proof of what they saw and a quick way to send it.
+See it. Snap it. Remember it.
+
+Wiz Snap Notes is your visual memory for work. Instead of trying to remember what you saw at every site, you take one photo. The app stamps your header with the date and time on the top, your notes on the bottom, and keeps it ready to find again in seconds.
+
+It is built for field officers, sales officers, petrol pump dealers and managers, inspectors, supervisors and maintenance teams who visit many sites in a day and need proof of what they saw.
+
+ONE PHOTO, FULL CONTEXT
+A field officer visits 10 petrol pumps in a day. A damaged signboard at one. A leak at another. An unfinished maintenance job. A safety issue that needs action. With Snap Notes each one becomes a photo note: what, where and when, printed on the picture itself. Nothing to remember, nothing to type up later.
 
 HOW IT WORKS
 1. Tap Snap and take the photo.
-2. Type a header, for example "HPCL Sector 12, Tank 2 dip". The header is required and is printed across the top of the photo with the date and time.
+2. Type a header, for example "HPCL Sector 12, Tank 2 dip". It is printed across the top of the photo with the date and time.
 3. Write your points in Notes. They are printed across the bottom of the photo.
-4. Add one or more dealer email IDs if you want, then tap Save & Mail. Gmail opens with the recipients, subject, notes and photo filled in. You tap Send.
+4. Tap Save, or add dealer email IDs and tap Save & Mail. Gmail opens with the recipients, subject, notes and photo filled in. You tap Send.
 
-SEARCH EVERYTHING YOU WROTE
-Every photo note goes into the built-in gallery. Type any word, like "leak", "nozzle 3" or a dealer name, and the matching photos appear instantly with the words highlighted. Filter by Today, 7 days or 30 days, or tap a saved header.
+FIND ANY MEMORY IN SECONDS
+Every photo note goes into your own searchable history, newest first. Type any word, like "leak", "nozzle 3" or a dealer name, and the matching photos appear instantly with the words highlighted. Filter by Today, 7 days or 30 days, or tap a saved header to see every visit to that site.
+
+USE IT FOR
+- Site visits and field inspections at IOCL, BPCL, HPCL, Jio-bp, Nayara and Shell petrol pumps
+- Maintenance and repair records, before and after photos
+- Safety checks, audits and complaints with time-stamped proof
+- Stock, meter and dip readings you need to report
+- Shop visits, deliveries, shopping lists and anything you don't want to forget
 
 SAVED TO YOUR GALLERY
 The stamped photo is also saved to your phone gallery in Pictures/Wiz Snap Notes, so you can share it on WhatsApp or upload it anywhere.
 
 BACK UP TO GOOGLE DRIVE (OPTIONAL)
-Sign in with Google and every photo note is copied to a "Wiz Snap Notes" folder in your own Drive, with the header and notes in the description so Drive search finds them. Choose Wi-Fi only to save mobile data. The app can only see the files it creates, never the rest of your Drive.
+Sign in with Google and every photo note is copied to a "Wiz Snap Notes" folder in your own Drive, with the header and notes in the description so Drive search finds them too. Choose Wi-Fi only to save mobile data. The app can only see the files it creates, never the rest of your Drive.
 
 MADE FOR DAILY WORK
 - Recent headers as one-tap chips, so you never retype a site name
-- Email autocomplete from dealers you mailed before
+- Email autocomplete from people you mailed before
 - "Add point" button for neat bullet notes
 - Live preview of the stamp while you type
 - Pinch to zoom on any saved photo
@@ -29,4 +43,4 @@ No ads, no tracking, no Wiz Labs servers. Without Drive backup the app works ful
 LIGHT AND SMOOTH
 The black-and-yellow Wiz design is animated but light on battery and memory, so it runs well on low-cost phones.
 
-Wiz Snap Notes is made by Wiz Labs, makers of Wiz Dip Charts, Wiz Fuel Density and Wiz GPS Camera.
+Wiz Snap Notes is an independent app by Wiz Labs, makers of Wiz Dip Charts, Wiz Fuel Density and Wiz GPS Camera. It is not affiliated with or endorsed by any oil company. Company names only describe where the app is used.
