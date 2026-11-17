@@ -1,0 +1,46 @@
+Sehen. Knipsen. Merken.
+
+Wiz Snap Notes ist dein visuelles Gedächtnis. Statt dir zu merken, was du gesehen hast, machst du ein Foto. Die App druckt oben eine Überschrift mit Datum und Uhrzeit, unten deine Notizen, und du findest alles in Sekunden wieder.
+
+Gemacht für alle, die eine Erinnerung festhalten wollen: eine Reise, ein Laden oder Einkaufszentrum, ein Produkt, das dir gefiel, wo du geparkt hast, ein Ort, zu dem du zurückwillst. Auch im Job stark: Ortstermine, Inspektionen, Wartung und Audits.
+
+EIN FOTO, VOLLER KONTEXT
+Du bummelst durchs Einkaufszentrum und siehst eine Jacke, die du vielleicht kaufst. Du reist und findest ein Café, das du wieder besuchen willst. Du parkst auf Ebene 3, Reihe D. Oder du besuchst 10 Orte im Job. Mit Snap Notes wird jeder Moment eine Foto-Notiz: was, wo und wann, direkt ins Bild gedruckt. Nichts zu merken, nichts nachzutragen.
+
+SO FUNKTIONIERT ES
+1. Tippe auf Snap und mach das Foto.
+2. Gib eine Überschrift ein, zum Beispiel „Gebäude C, 2. OG". Sie wird oben ins Foto gedruckt, mit Datum und Uhrzeit.
+3. Schreibe deine Punkte unter Notizen. Sie werden unten ins Foto gedruckt.
+4. Tippe auf Speichern, oder füge E-Mail-Adressen hinzu und tippe auf Speichern & Senden. Deine Mail-App öffnet sich fertig ausgefüllt. Du tippst auf Senden.
+
+MEHRERE FOTOS, EIN BESUCH
+Tippe auf „+ Snap", um das nächste Problem unter dieselbe Überschrift zu legen. Jedes Foto hat seine eigene Notiz und den Stempel „Gebäude C · 1/3". Die Startseite zeigt eine Karte pro Besuch, und „Alle senden" verschickt eine E-Mail mit allen Fotos.
+
+ORT STEMPELN (OPTIONAL)
+Schalte unter der Überschrift „Standort stempeln" ein, um Ortsnamen und GPS-Koordinaten ins Foto zu drucken. Die E-Mail enthält einen Google-Maps-Link. Kein GPS-Signal? Das Foto wird ohne Standort gespeichert.
+
+JEDE ERINNERUNG IN SEKUNDEN FINDEN
+Jede Notiz landet in deinem durchsuchbaren Verlauf. Tippe „Leck", „Tor 3" oder einen Kundennamen, und die Fotos erscheinen sofort mit markierten Wörtern. Die Zeitleiste gruppiert nach Heute, Gestern und Datum. Filtere nach 7 oder 30 Tagen, oder tippe auf eine gespeicherte Überschrift, um alle Besuche an diesem Ort zu sehen.
+
+EINSATZZWECKE
+- Reiseerinnerungen, Einkaufslisten und alles, was du nicht vergessen willst
+- Besuche an Tankstellen
+- Bestände, Zählerstände und Lieferungen, die du melden musst
+- Immobilienbesichtigungen, Versicherungsgutachten und Regalkontrollen
+- Baufortschritt, Mängellisten und Sicherheitschecks
+- Wartung und Reparaturen, Vorher-Nachher-Fotos
+- Ortstermine, Inspektionen und Audits mit Zeitnachweis
+
+IN DEINER GALERIE GESPEICHERT
+Das gestempelte Foto wird zusätzlich unter Pictures/Wiz Snap Notes gespeichert, damit du es per WhatsApp teilen oder überall hochladen kannst.
+
+SICHERUNG IN GOOGLE DRIVE (OPTIONAL)
+Melde dich mit Google an, und jede Notiz wird in einen Ordner „Wiz Snap Notes" in deinem eigenen Drive kopiert, mit Überschrift und Notizen in der Beschreibung. Wähle „Nur WLAN", um mobile Daten zu sparen. Die App sieht nur die Dateien, die sie selbst erstellt, nie den Rest deines Drive.
+
+PRIVAT VON GRUND AUF
+Keine Werbung, kein Tracking, keine Wiz-Labs-Server. Ohne Drive-Sicherung läuft die App komplett offline, und deine Fotos und Notizen bleiben auf deinem Telefon. Die E-Mail sendet deine eigene Mail-App, erst wenn du auf Senden tippst. Datum und Uhrzeit folgen der Sprache deines Telefons.
+
+LEICHT UND FLÜSSIG
+Das schwarz-gelbe Wiz-Design ist animiert, schont aber Akku und Speicher und läuft gut auf günstigen Telefonen.
+
+Wiz Snap Notes ist eine unabhängige App von Wiz Labs. Sie ist weder mit Unternehmen verbunden, die in den Einsatzbeispielen genannt oder gemeint sind, noch von ihnen empfohlen.

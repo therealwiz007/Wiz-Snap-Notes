@@ -3,20 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Wiz Snap Notes: Photo Notes &amp; Visual Memory for Site Visits</title>
-<meta name="description" content="Photo notes app for field work: stamp a header, date, time and notes on site photos, search them instantly and mail them in one tap. Made for petrol pump inspections.">
+<title>Wiz Snap Notes: Photo Notes &amp; Visual Memory for Trips, Shopping and Work</title>
+<meta name="description" content="Photo notes app to save memories: stamp a header, date, time, place and notes on photos of trips, shops, malls and work visits, search them instantly and mail them in one tap.">
 <link rel="canonical" href="https://therealwiz007.github.io/Wiz-Snap-Notes/">
 <link rel="alternate" hreflang="en" href="https://therealwiz007.github.io/Wiz-Snap-Notes/">
+<link rel="alternate" hreflang="es" href="https://therealwiz007.github.io/Wiz-Snap-Notes/es/">
+<link rel="alternate" hreflang="pt-BR" href="https://therealwiz007.github.io/Wiz-Snap-Notes/pt-br/">
+<link rel="alternate" hreflang="fr" href="https://therealwiz007.github.io/Wiz-Snap-Notes/fr/">
+<link rel="alternate" hreflang="de" href="https://therealwiz007.github.io/Wiz-Snap-Notes/de/">
+<link rel="alternate" hreflang="id" href="https://therealwiz007.github.io/Wiz-Snap-Notes/id/">
+<link rel="alternate" hreflang="ar" href="https://therealwiz007.github.io/Wiz-Snap-Notes/ar/">
+<link rel="alternate" hreflang="ru" href="https://therealwiz007.github.io/Wiz-Snap-Notes/ru/">
 <link rel="alternate" hreflang="hi" href="https://therealwiz007.github.io/Wiz-Snap-Notes/hi/">
 <link rel="alternate" hreflang="x-default" href="https://therealwiz007.github.io/Wiz-Snap-Notes/">
 <link rel="icon" href="site/icon-96.png">
 <meta name="theme-color" content="#FFC400">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Wiz Snap Notes: see it, snap it, remember it">
-<meta property="og:description" content="Your visual memory for work: photo notes with date, time and instant search.">
+<meta property="og:description" content="Your visual memory: photo notes with date, time, place and instant search.">
 <meta property="og:url" content="https://therealwiz007.github.io/Wiz-Snap-Notes/">
 <meta property="og:image" content="https://therealwiz007.github.io/Wiz-Snap-Notes/site/og-image.png">
-<meta property="og:locale" content="en_IN">
+<meta property="og:locale" content="en_US">
 <meta property="og:site_name" content="Wiz Labs">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
@@ -27,7 +34,7 @@
   "operatingSystem": "Android",
   "applicationCategory": "BusinessApplication",
   "applicationSubCategory": "Photo notes",
-  "description": "Your visual memory for work: photo notes with date, time and instant search.",
+  "description": "Your visual memory: photo notes with date, time, place and instant search.",
   "softwareVersion": "1.2.0",
   "inLanguage": "en",
   "url": "https://therealwiz007.github.io/Wiz-Snap-Notes/",
@@ -45,8 +52,8 @@
   "mainEntity": [
     { "@type": "Question", "name": "What is Wiz Snap Notes?", "acceptedAnswer": { "@type": "Answer", "text": "A visual memory app for work. You take a photo, type a header and notes, and the app prints them on the photo with the date and time. Every photo note is saved in a searchable history so you can find it again in seconds." } },
     { "@type": "Question", "name": "How is it different from a normal notes app or camera?", "acceptedAnswer": { "@type": "Answer", "text": "A notes app keeps text without the picture, and the camera keeps pictures without context. Snap Notes keeps both together: the photo, what it is about, and when you took it, printed on the image and searchable by any word." } },
-    { "@type": "Question", "name": "Can I use it for petrol pump inspections?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. It was made for site visits at IOCL, BPCL, HPCL, Jio-bp, Nayara and Shell petrol pumps: damaged signboards, leaks, pending maintenance, safety issues and dip or meter readings. It works for any field inspection, maintenance record or site visit." } },
-    { "@type": "Question", "name": "How do I send a photo note to a dealer?", "acceptedAnswer": { "@type": "Answer", "text": "Add one or more email IDs and tap Save &amp; Mail. Gmail opens with the recipients, subject, notes and stamped photo filled in, and you tap Send. You can also share the photo on WhatsApp or any other app." } },
+    { "@type": "Question", "name": "Is it only for work?", "acceptedAnswer": { "@type": "Answer", "text": "No. Use it for trips, shopping, malls, parking spots and personal memories, and equally for site visits, inspections, maintenance and audits." } },
+    { "@type": "Question", "name": "How do I send a photo note to someone?", "acceptedAnswer": { "@type": "Answer", "text": "Add one or more email IDs and tap Save &amp; Mail. Your mail app opens with the recipients, subject, notes and stamped photo filled in, and you tap Send. You can also share the photo on WhatsApp or any other app." } },
     { "@type": "Question", "name": "Does it work without internet?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Without Google Drive backup the app works fully offline and your photos and notes stay on your phone. Drive backup is optional and saves to a folder in your own Drive." } },
     { "@type": "Question", "name": "Is it free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. No ads, no tracking and no account needed." } }
   ]
@@ -65,7 +72,7 @@ h1{font-size:1.7rem;line-height:1.2;margin:0;letter-spacing:-.02em}
 .play{display:inline-flex;align-items:center;gap:10px;background:var(--ink);color:#fff;text-decoration:none;padding:12px 20px;border-radius:14px;font-weight:600;border:1px solid var(--accent);transition:transform .15s}
 .play:active{transform:scale(.97)}
 .play b{color:var(--accent)}
-.lang{margin-left:12px;color:var(--muted)}
+.langs{margin:14px 0 0;color:var(--muted);font-size:14px;line-height:1.9}.langs a{color:var(--muted)}
 .shots{display:flex;gap:10px;overflow-x:auto;margin:26px 0 8px;padding-bottom:6px;scroll-snap-type:x mandatory}
 .shots img{width:180px;height:320px;flex:none;border-radius:16px;border:1px solid var(--line);scroll-snap-align:start;background:var(--card)}
 section{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 20px;margin-top:16px}
@@ -85,11 +92,11 @@ footer{max-width:760px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font
 <main>
 <header>
   <img src="site/icon-96.png" alt="Wiz Snap Notes icon" width="56" height="56">
-  <h1>Wiz Snap Notes: your visual memory for work</h1>
+  <h1>Wiz Snap Notes: your visual memory</h1>
 </header>
-<p class="pitch">See it. Snap it. Remember it. Take one photo and the app prints your header, the date and time, and your notes on it, then keeps it in a searchable history. Built for field officers, petrol pump dealers, inspectors and maintenance teams.</p>
+<p class="pitch">See it. Snap it. Remember it. Take one photo and the app prints your header, the date and time, and your notes on it, then keeps it in a searchable history. Save a trip, a shop, a mall, a parking spot or a work visit.</p>
 <a class="play" href="https://play.google.com/store/apps/details?id=com.wizlabs.snapnotes&amp;referrer=utm_source%3Dwizlabs_site%26utm_medium%3Dlanding%26utm_campaign%3DWiz-Snap-Notes">Get it on <b>Google Play</b></a>
-<a class="lang" href="hi/" hreflang="hi" lang="hi">हिंदी में पढ़ें</a>
+<p class="langs"><b>English</b> · <a href="es/" hreflang="es" lang="es">Español</a> · <a href="pt-br/" hreflang="pt-BR" lang="pt-BR">Português</a> · <a href="fr/" hreflang="fr" lang="fr">Français</a> · <a href="de/" hreflang="de" lang="de">Deutsch</a> · <a href="id/" hreflang="id" lang="id">Bahasa Indonesia</a> · <a href="ar/" hreflang="ar" lang="ar">العربية</a> · <a href="ru/" hreflang="ru" lang="ru">Русский</a> · <a href="hi/" hreflang="hi" lang="hi">हिंदी</a></p>
 
 <div class="shots">
   <img src="site/shot-1.jpg" alt="Wiz Snap Notes gallery of stamped photo notes" width="180" height="320" loading="lazy">
@@ -98,10 +105,10 @@ footer{max-width:760px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font
 </div>
 
 <section>
-  <h2>A new way to remember work</h2>
-  <p>Your brain is for thinking, not for remembering ten site visits. A field officer visits 10 petrol pumps in a day: a damaged signboard at one, a leak at another, an unfinished maintenance job, a safety issue. Snap Notes turns each one into a photo note, so nothing depends on memory.</p>
+  <h2>A new way to remember</h2>
+  <p>Your brain is for thinking, not for remembering everything you see. You spot a jacket in a mall, a cafe on a trip, the row where you parked, or ten site visits in a day. Snap Notes turns each one into a photo note, so nothing depends on memory.</p>
   <ul>
-    <li><b>Capture</b>: don't stop your work to write long notes. One photo is enough.</li>
+    <li><b>Capture</b>: don't stop to write long notes. One photo is enough.</li>
     <li><b>Preserve</b>: the photo, header, notes, date and time are kept together, printed on the image.</li>
     <li><b>Recall</b>: type any word and find exactly what you saw, and when.</li>
   </ul>
@@ -111,8 +118,10 @@ footer{max-width:760px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font
   <h2>What it does</h2>
   <ul>
     <li>Header with date and time stamped on top of the photo, your notes on the bottom.</li>
-    <li>Searchable history, newest first. Filter by Today, 7 days or 30 days, or by site header.</li>
-    <li>Save &amp; Mail: Gmail opens with recipients, subject, notes and photo filled in.</li>
+    <li>Several photos under one header, one card per visit, one email with every photo.</li>
+    <li>Optional location stamp: place name and GPS printed on the photo, with a Maps link in the mail.</li>
+    <li>Searchable history with a timeline: Today, Yesterday and by date. Filter by 7 or 30 days, or by header.</li>
+    <li>Save &amp; Mail: your mail app opens with recipients, subject, notes and photo filled in.</li>
     <li>Copy in your gallery under Pictures/Wiz Snap Notes for WhatsApp sharing.</li>
     <li>Optional Google Drive backup to a folder in your own Drive, Wi-Fi only if you like.</li>
     <li>Recent headers as one-tap chips, email autocomplete and bullet points.</li>
@@ -123,11 +132,12 @@ footer{max-width:760px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font
 <section>
   <h2>Use it for</h2>
   <ul>
-    <li>Petrol pump site visits and inspections at IOCL, BPCL, HPCL, Jio-bp, Nayara and Shell outlets.</li>
-    <li>Maintenance and repair records with before and after photos.</li>
-    <li>Safety checks, audits and complaints with time-stamped proof.</li>
-    <li>Stock, meter and dip readings to report.</li>
-    <li>Shop visits, deliveries, shopping lists and anything you don't want to forget.</li>
+    <li>Trips: places, food, hotels, signs and ideas you want to come back to.</li>
+    <li>Shopping and malls: products, prices and shops you liked, shopping lists.</li>
+    <li>Where you parked, what you lent, what you saw, anything you don't want to forget.</li>
+    <li>Site visits, field inspections and audits with time-stamped proof.</li>
+    <li>Maintenance, repair and construction records with before and after photos.</li>
+    <li>Real estate viewings, insurance surveys, retail shelf checks, petrol pump visits.</li>
   </ul>
 </section>
 
@@ -143,15 +153,15 @@ footer{max-width:760px;margin:0 auto;padding:0 16px 32px;color:var(--muted);font
   <h2>Questions</h2>
   <details><summary>What is Wiz Snap Notes?</summary><p>A visual memory app for work. You take a photo, type a header and notes, and the app prints them on the photo with the date and time. Every photo note is saved in a searchable history so you can find it again in seconds.</p></details>
   <details><summary>How is it different from a normal notes app or camera?</summary><p>A notes app keeps text without the picture, and the camera keeps pictures without context. Snap Notes keeps both together: the photo, what it is about, and when you took it, printed on the image and searchable by any word.</p></details>
-  <details><summary>Can I use it for petrol pump inspections?</summary><p>Yes. It was made for site visits at IOCL, BPCL, HPCL, Jio-bp, Nayara and Shell petrol pumps: damaged signboards, leaks, pending maintenance, safety issues and dip or meter readings. It works for any field inspection, maintenance record or site visit.</p></details>
-  <details><summary>How do I send a photo note to a dealer?</summary><p>Add one or more email IDs and tap Save &amp; Mail. Gmail opens with the recipients, subject, notes and stamped photo filled in, and you tap Send. You can also share the photo on WhatsApp or any other app.</p></details>
+  <details><summary>Is it only for work?</summary><p>No. Use it for trips, shopping, malls, parking spots and personal memories, and equally for site visits, inspections, maintenance and audits.</p></details>
+  <details><summary>How do I send a photo note to someone?</summary><p>Add one or more email IDs and tap Save &amp; Mail. Your mail app opens with the recipients, subject, notes and stamped photo filled in, and you tap Send. You can also share the photo on WhatsApp or any other app.</p></details>
   <details><summary>Does it work without internet?</summary><p>Yes. Without Google Drive backup the app works fully offline and your photos and notes stay on your phone. Drive backup is optional and saves to a folder in your own Drive.</p></details>
   <details><summary>Is it free?</summary><p>Yes. No ads, no tracking and no account needed.</p></details>
 </section>
 </main>
 <footer>
   <p><a href="privacy-policy.html">Privacy policy</a> · Contact: <a href="mailto:blazewizofficial@gmail.com">blazewizofficial@gmail.com</a></p>
-  <p>Wiz Snap Notes is an independent app by Wiz Labs. It is not affiliated with, endorsed by or approved by IOCL, BPCL, HPCL, Jio-bp, Nayara Energy, Shell or any other oil company. Company names only describe where the app is used. Google Play is a trademark of Google LLC.</p>
+  <p>Wiz Snap Notes is an independent app by Wiz Labs. It is not affiliated with or endorsed by any company named or implied in its use cases. Google Play is a trademark of Google LLC.</p>
 </footer>
 </body>
 </html>

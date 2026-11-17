@@ -312,7 +312,8 @@ object DriveBackup {
     }
 
     private fun explain(e: ApiException): String = when (e.statusCode) {
-        CommonStatusCodes.DEVELOPER_ERROR -> "Google sign-in is not set up for this app build"
+        CommonStatusCodes.DEVELOPER_ERROR, CommonStatusCodes.INTERNAL_ERROR ->
+            "Google sign-in is not set up for this app build (${e.statusCode})"
         CommonStatusCodes.NETWORK_ERROR -> "No internet connection"
         else -> "Google sign-in failed (${e.statusCode})"
     }

@@ -100,8 +100,9 @@ fun BackupScreen(onBack: () -> Unit) {
                 }
             } catch (e: com.google.android.gms.common.api.ApiException) {
                 connecting = false
-                error = if (e.statusCode == com.google.android.gms.common.api.CommonStatusCodes.DEVELOPER_ERROR)
-                    "Google sign-in is not set up for this app build yet." else "Could not reach Google (${e.statusCode}). Check the internet and try again."
+                error = if (e.statusCode == com.google.android.gms.common.api.CommonStatusCodes.DEVELOPER_ERROR ||
+                    e.statusCode == com.google.android.gms.common.api.CommonStatusCodes.INTERNAL_ERROR)
+                    "Google sign-in is not set up for this app build yet (${e.statusCode})." else "Could not reach Google (${e.statusCode}). Check the internet and try again."
             } catch (e: Exception) {
                 connecting = false
                 error = "Could not reach Google. Check the internet and try again."

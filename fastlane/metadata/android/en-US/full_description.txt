@@ -1,27 +1,35 @@
 See it. Snap it. Remember it.
 
-Wiz Snap Notes is your visual memory for work. Instead of trying to remember what you saw at every site, you take one photo. The app stamps your header with the date and time on the top, your notes on the bottom, and keeps it ready to find again in seconds.
+Wiz Snap Notes is your visual memory. Instead of trying to remember what you saw, take one photo. The app prints a header with the date and time on top, your notes at the bottom, and keeps it ready to find again in seconds.
 
-It is built for field officers, sales officers, petrol pump dealers and managers, inspectors, supervisors and maintenance teams who visit many sites in a day and need proof of what they saw.
+Built for anyone who wants to keep a memory: a trip, a shop or mall you visited, a product you liked, where you parked, a place you want to come back to. Also great for work: site visits, inspections, maintenance and audits.
 
 ONE PHOTO, FULL CONTEXT
-A field officer visits 10 petrol pumps in a day. A damaged signboard at one. A leak at another. An unfinished maintenance job. A safety issue that needs action. With Snap Notes each one becomes a photo note: what, where and when, printed on the picture itself. Nothing to remember, nothing to type up later.
+You walk through a mall and spot a jacket you might buy. You travel and find a cafe you want to revisit. You park on level 3, row D. Or you visit 10 sites at work. With Snap Notes each moment becomes a photo note: what, where and when, printed on the picture itself. Nothing to remember, nothing to type up later.
 
 HOW IT WORKS
 1. Tap Snap and take the photo.
-2. Type a header, for example "HPCL Sector 12, Tank 2 dip". It is printed across the top of the photo with the date and time.
+2. Type a header, for example "Block C, Floor 2 inspection". It is printed across the top of the photo with the date and time.
 3. Write your points in Notes. They are printed across the bottom of the photo.
-4. Tap Save, or add dealer email IDs and tap Save & Mail. Gmail opens with the recipients, subject, notes and photo filled in. You tap Send.
+4. Tap Save, or add email IDs and tap Save & Mail. Your mail app opens with the recipients, subject, notes and photo filled in. You tap Send.
+
+SEVERAL PHOTOS, ONE VISIT
+Tap "+ Snap" to add the next issue under the same header. Each photo has its own note and is stamped "Block C · 1/3". Home shows one card per visit, and "Mail all" sends one email with every photo.
+
+STAMP THE PLACE (OPTIONAL)
+Turn on "Stamp location" under the header to print the place name and GPS coordinates on the photo. The email gets a Google Maps link. No GPS signal? The photo is saved without location, nothing breaks.
 
 FIND ANY MEMORY IN SECONDS
-Every photo note goes into your own searchable history, newest first. Type any word, like "leak", "nozzle 3" or a dealer name, and the matching photos appear instantly with the words highlighted. Filter by Today, 7 days or 30 days, or tap a saved header to see every visit to that site.
+Every photo note goes into your own searchable history. Type any word, like "leak", "gate 3" or a client name, and the matching photos appear instantly with the words highlighted. The timeline groups notes by Today, Yesterday and date. Filter by 7 or 30 days, or tap a saved header to see every visit to that place.
 
 USE IT FOR
-- Site visits and field inspections at IOCL, BPCL, HPCL, Jio-bp, Nayara and Shell petrol pumps
+- Travel memories, shopping lists and anything you don't want to forget
+- Petrol pump and fuel station visits
+- Stock, meter and delivery records you need to report
+- Real estate viewings, insurance surveys and retail shelf checks
+- Construction progress, snag lists and safety checks
 - Maintenance and repair records, before and after photos
-- Safety checks, audits and complaints with time-stamped proof
-- Stock, meter and dip readings you need to report
-- Shop visits, deliveries, shopping lists and anything you don't want to forget
+- Site visits, field inspections and audits with time-stamped proof
 
 SAVED TO YOUR GALLERY
 The stamped photo is also saved to your phone gallery in Pictures/Wiz Snap Notes, so you can share it on WhatsApp or upload it anywhere.
@@ -30,12 +38,12 @@ BACK UP TO GOOGLE DRIVE (OPTIONAL)
 Sign in with Google and every photo note is copied to a "Wiz Snap Notes" folder in your own Drive, with the header and notes in the description so Drive search finds them too. Choose Wi-Fi only to save mobile data. The app can only see the files it creates, never the rest of your Drive.
 
 MADE FOR DAILY WORK
-- Recent headers as one-tap chips, so you never retype a site name
+- Recent headers as one-tap chips, so you never retype a place name
 - Email autocomplete from people you mailed before
 - "Add point" button for neat bullet notes
 - Live preview of the stamp while you type
 - Pinch to zoom on any saved photo
-- Share to any app, or delete when done
+- Dates and times follow your phone's language
 
 PRIVATE BY DESIGN
 No ads, no tracking, no Wiz Labs servers. Without Drive backup the app works fully offline and your photos and notes stay on your phone. Mail is sent by your own mail app only when you tap Send.
@@ -43,4 +51,4 @@ No ads, no tracking, no Wiz Labs servers. Without Drive backup the app works ful
 LIGHT AND SMOOTH
 The black-and-yellow Wiz design is animated but light on battery and memory, so it runs well on low-cost phones.
 
-Wiz Snap Notes is an independent app by Wiz Labs, makers of Wiz Dip Charts, Wiz Fuel Density and Wiz GPS Camera. It is not affiliated with or endorsed by any oil company. Company names only describe where the app is used.
+Wiz Snap Notes is an independent app by Wiz Labs. It is not affiliated with or endorsed by any company named or implied in its use cases.

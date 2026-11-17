@@ -1,0 +1,4 @@
+Wiz Snap Notes 1.3.1:
+• Works on more phones (location is now optional)
+• Store page and website in 9 languages
+• Clearer message when Google sign-in is not set up

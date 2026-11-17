@@ -12,3 +12,4 @@ Wiz Snap Notes (*.apk)
 *.keystore
 *.apk
 *.aab
+graphify-out/

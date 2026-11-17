@@ -1,0 +1,46 @@
+Míralo. Fotografíalo. Recuérdalo.
+
+Wiz Snap Notes es tu memoria visual. En lugar de intentar recordar lo que viste, haz una foto. La app imprime un encabezado con la fecha y la hora arriba y tus notas abajo, y la guarda lista para encontrarla en segundos.
+
+Hecha para quien quiere guardar un recuerdo: un viaje, una tienda o centro comercial, un producto que te gustó, dónde aparcaste, un lugar al que quieres volver. También sirve para el trabajo: visitas de obra, inspecciones, mantenimiento y auditorías.
+
+UNA FOTO, TODO EL CONTEXTO
+Paseas por un centro comercial y ves una chaqueta que quizá compres. Viajas y encuentras una cafetería a la que quieres volver. Aparcas en la planta 3, fila D. O visitas 10 sitios en el trabajo. Con Snap Notes cada momento es una nota con foto: qué, dónde y cuándo, impreso en la propia imagen. Nada que recordar, nada que redactar después.
+
+CÓMO FUNCIONA
+1. Toca Snap y haz la foto.
+2. Escribe un encabezado, por ejemplo "Bloque C, planta 2". Se imprime arriba con la fecha y la hora.
+3. Escribe tus puntos en Notas. Se imprimen abajo.
+4. Toca Guardar, o añade correos y toca Guardar y enviar. Tu app de correo se abre con todo listo. Tú tocas Enviar.
+
+VARIAS FOTOS, UNA VISITA
+Toca "+ Snap" para añadir el siguiente problema bajo el mismo encabezado. Cada foto lleva su nota y su sello "Bloque C · 1/3". Inicio muestra una tarjeta por visita y "Enviar todo" manda un solo correo con todas las fotos.
+
+SELLA EL LUGAR (OPCIONAL)
+Activa "Sellar ubicación" bajo el encabezado para imprimir el nombre del lugar y las coordenadas GPS en la foto. El correo incluye un enlace de Google Maps. ¿Sin señal GPS? La foto se guarda sin ubicación.
+
+ENCUENTRA CUALQUIER RECUERDO EN SEGUNDOS
+Cada nota va a tu historial con búsqueda. Escribe "fuga", "puerta 3" o el nombre de un cliente y las fotos aparecen al instante con las palabras resaltadas. La cronología agrupa por Hoy, Ayer y fecha. Filtra por 7 o 30 días, o toca un encabezado guardado para ver todas las visitas a ese lugar.
+
+ÚSALA PARA
+- Recuerdos de viaje, listas de compras y todo lo que no quieras olvidar
+- Visitas a gasolineras
+- Inventario, contadores y entregas que debes informar
+- Visitas inmobiliarias, peritajes de seguros y revisión de estanterías
+- Avance de obra, listas de defectos y controles de seguridad
+- Mantenimiento y reparaciones, fotos de antes y después
+- Visitas de obra, inspecciones y auditorías con prueba de fecha y hora
+
+GUARDADA EN TU GALERÍA
+La foto sellada también se guarda en Pictures/Wiz Snap Notes para compartirla por WhatsApp o subirla donde quieras.
+
+COPIA EN GOOGLE DRIVE (OPCIONAL)
+Inicia sesión con Google y cada nota se copia a una carpeta "Wiz Snap Notes" de tu propio Drive, con encabezado y notas en la descripción. Elige solo Wi-Fi para ahorrar datos. La app solo ve los archivos que crea, nunca el resto de tu Drive.
+
+PRIVADA POR DISEÑO
+Sin anuncios, sin rastreo, sin servidores de Wiz Labs. Sin copia en Drive, la app funciona sin conexión y tus fotos y notas se quedan en tu teléfono. El correo lo envía tu propia app solo cuando tocas Enviar. Fechas y horas siguen el idioma del teléfono.
+
+LIGERA Y FLUIDA
+El diseño negro y amarillo de Wiz es animado pero ligero en batería y memoria, y va bien en teléfonos económicos.
+
+Wiz Snap Notes es una app independiente de Wiz Labs. No está afiliada ni respaldada por ninguna empresa mencionada o implícita en sus casos de uso.

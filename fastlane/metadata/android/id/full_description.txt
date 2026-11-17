@@ -1,0 +1,46 @@
+Lihat. Foto. Ingat.
+
+Wiz Snap Notes adalah memori visual Anda. Daripada berusaha mengingat apa yang Anda lihat, ambil satu foto. Aplikasi mencetak judul dengan tanggal dan jam di atas serta catatan Anda di bawah, lalu menyimpannya agar mudah ditemukan dalam hitungan detik.
+
+Dibuat untuk siapa saja yang ingin menyimpan kenangan: perjalanan, toko atau mal, produk yang Anda suka, tempat parkir, tempat yang ingin dikunjungi lagi. Juga bagus untuk kerja: kunjungan lapangan, inspeksi, perawatan, dan audit.
+
+SATU FOTO, KONTEKS LENGKAP
+Anda berkeliling di mal dan melihat jaket yang mungkin dibeli. Anda bepergian dan menemukan kafe yang ingin dikunjungi lagi. Anda parkir di lantai 3, baris D. Atau mengunjungi 10 lokasi untuk pekerjaan. Dengan Snap Notes, setiap momen menjadi catatan foto: apa, di mana, dan kapan, tercetak langsung di gambar. Tidak ada yang perlu diingat, tidak ada yang perlu diketik ulang.
+
+CARA KERJA
+1. Ketuk Snap dan ambil foto.
+2. Ketik judul, misalnya "Blok C, Lantai 2". Judul tercetak di atas foto bersama tanggal dan jam.
+3. Tulis poin Anda di Catatan. Poin tercetak di bagian bawah foto.
+4. Ketuk Simpan, atau tambahkan email lalu ketuk Simpan & Kirim. Aplikasi email Anda terbuka dengan semuanya terisi. Anda tinggal mengetuk Kirim.
+
+BEBERAPA FOTO, SATU KUNJUNGAN
+Ketuk "+ Snap" untuk menambah masalah berikutnya di bawah judul yang sama. Setiap foto punya catatan sendiri dan cap "Blok C · 1/3". Beranda menampilkan satu kartu per kunjungan, dan "Kirim semua" mengirim satu email berisi semua foto.
+
+CAP LOKASI (OPSIONAL)
+Aktifkan "Cap lokasi" di bawah judul untuk mencetak nama tempat dan koordinat GPS pada foto. Email berisi tautan Google Maps. Tidak ada sinyal GPS? Foto tetap disimpan tanpa lokasi.
+
+TEMUKAN INGATAN APA PUN DALAM DETIK
+Setiap catatan masuk ke riwayat yang bisa dicari. Ketik "bocor", "gerbang 3", atau nama klien, dan foto yang cocok muncul seketika dengan kata yang disorot. Linimasa mengelompokkan menurut Hari ini, Kemarin, dan tanggal. Filter 7 atau 30 hari, atau ketuk judul tersimpan untuk melihat semua kunjungan ke tempat itu.
+
+GUNAKAN UNTUK
+- Kenangan perjalanan, daftar belanja, dan apa pun yang tidak ingin Anda lupakan
+- Kunjungan ke SPBU
+- Stok, meter, dan pengiriman yang harus dilaporkan
+- Survei properti, survei asuransi, dan cek rak toko
+- Progres konstruksi, daftar temuan, dan pemeriksaan keselamatan
+- Catatan perawatan dan perbaikan, foto sebelum dan sesudah
+- Kunjungan lapangan, inspeksi, dan audit dengan bukti waktu
+
+TERSIMPAN DI GALERI
+Foto bercap juga disimpan di Pictures/Wiz Snap Notes, sehingga bisa dibagikan lewat WhatsApp atau diunggah ke mana saja.
+
+CADANGAN KE GOOGLE DRIVE (OPSIONAL)
+Masuk dengan Google dan setiap catatan disalin ke folder "Wiz Snap Notes" di Drive Anda sendiri, dengan judul dan catatan di deskripsi. Pilih hanya Wi-Fi untuk menghemat kuota. Aplikasi hanya bisa melihat file yang dibuatnya, tidak pernah isi Drive lainnya.
+
+PRIVAT SEJAK AWAL
+Tanpa iklan, tanpa pelacakan, tanpa server Wiz Labs. Tanpa cadangan Drive, aplikasi bekerja offline dan foto serta catatan tetap di ponsel Anda. Email dikirim oleh aplikasi email Anda sendiri hanya saat Anda mengetuk Kirim. Tanggal dan jam mengikuti bahasa ponsel.
+
+RINGAN DAN MULUS
+Desain hitam-kuning Wiz beranimasi tetapi hemat baterai dan memori, jadi berjalan baik di ponsel murah.
+
+Wiz Snap Notes adalah aplikasi independen dari Wiz Labs. Aplikasi ini tidak berafiliasi dengan atau didukung oleh perusahaan mana pun yang disebut atau tersirat dalam contoh penggunaannya.
