@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -89,6 +90,7 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit, 
     var query by rememberSaveable { mutableStateOf("") }
     var range by rememberSaveable { mutableStateOf(DateRange.ALL) }
     var notes by remember { mutableStateOf<List<Note>?>(null) }
+    var visits by remember { mutableStateOf(emptyList<Visit>()) }
     var total by remember { mutableIntStateOf(0) }
     var headers by remember { mutableStateOf(emptyList<String>()) }
     var pending by remember { mutableIntStateOf(0) }
@@ -99,6 +101,7 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit, 
         val (list, count, recent) = withContext(Dispatchers.IO) {
             Triple(store.search(query, range), store.count(), store.recentHeaders(8))
         }
+        visits = withContext(Dispatchers.IO) { store.groupVisits(list) }
         notes = list; total = count; headers = recent
         pending = withContext(Dispatchers.IO) { store.pendingCount() }
     }
@@ -127,17 +130,29 @@ fun HomeScreen(onSnap: () -> Unit, onOpen: (Long) -> Unit, onAbout: () -> Unit, 
                     EmptyState("Nothing matches", if (query.isNotBlank()) "No header or note contains \"${query.trim()}\"." else "No photo notes in this date range.")
                 }
                 else -> {
-                    item(span = { GridItemSpan(maxLineSpan) }, key = "count") {
-                        Text(
-                            if (terms.isEmpty() && range == DateRange.ALL) "ALL NOTES" else "${list.size} FOUND",
-                            color = WizMuted, style = MaterialTheme.typography.labelMedium,
-                            modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                        )
+                    if (terms.isNotEmpty() || range != DateRange.ALL) {
+                        item(span = { GridItemSpan(maxLineSpan) }, key = "count") {
+                            Text(
+                                "${list.size} FOUND",
+                                color = WizMuted, style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier.padding(start = 4.dp, top = 4.dp)
+                            )
+                        }
                     }
-                    itemsIndexed(list, key = { _, it -> it.id }, contentType = { _, _ -> "note" }) { i, n ->
-                        // Cards glide to their new places and fade in/out as the search narrows or widens.
-                        Box(Modifier.animateItem(fadeInSpec = tween(180), placementSpec = spring(dampingRatio = 1f, stiffness = 400f, visibilityThreshold = IntOffset.VisibilityThreshold), fadeOutSpec = tween(120))) {
-                            NoteCard(n, terms, i) { onOpen(n.id) }
+                    // Timeline: visits grouped under Today, Yesterday, weekday or date.
+                    var i = 0
+                    Timeline.byDay(visits).forEach { (day, dayVisits) ->
+                        item(span = { GridItemSpan(maxLineSpan) }, key = "day_$day", contentType = "day") {
+                            DayHeader(Timeline.label(day), dayVisits.sumOf { it.size }, Modifier.animateItem(fadeInSpec = tween(180), fadeOutSpec = tween(120)))
+                        }
+                        dayVisits.forEach { v ->
+                            val index = i++
+                            item(key = "v_${v.id}", contentType = "visit") {
+                                // Cards glide to their new places and fade in/out as the search narrows or widens.
+                                Box(Modifier.animateItem(fadeInSpec = tween(180), placementSpec = spring(dampingRatio = 1f, stiffness = 400f, visibilityThreshold = IntOffset.VisibilityThreshold), fadeOutSpec = tween(120))) {
+                                    VisitCard(v, terms, index) { onOpen(v.id) }
+                                }
+                            }
                         }
                     }
                 }
@@ -281,10 +296,23 @@ private fun SearchBlock(
     }
 }
 
-private val cardDate = SimpleDateFormat("d MMM · h:mm a", Locale.ENGLISH)
-
 @Composable
-private fun NoteCard(n: Note, terms: List<String>, index: Int, onClick: () -> Unit) {
+private fun DayHeader(label: String, snaps: Int, modifier: Modifier) {
+    Row(modifier.fillMaxWidth().padding(start = 4.dp, top = 10.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(8.dp).clip(CircleShape).background(WizAccent))
+        Spacer(Modifier.width(8.dp))
+        Text(label.uppercase(Locale.getDefault()), color = WizText, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.width(8.dp))
+        Box(Modifier.weight(1f).height(1.dp).background(WizLine))
+        Spacer(Modifier.width(8.dp))
+        Text(if (snaps == 1) "1 snap" else "$snaps snaps", color = WizMuted, style = MaterialTheme.typography.labelSmall)
+    }
+}
+
+/** One visit: the first snap as the cover, a stacked card behind it when there are more. */
+@Composable
+private fun VisitCard(v: Visit, terms: List<String>, index: Int, onClick: () -> Unit) {
+    val n = v.cover
     val img by rememberImage(n.thumb)
     val interaction = remember { MutableInteractionSource() }
     Surface(
@@ -298,6 +326,18 @@ private fun NoteCard(n: Note, terms: List<String>, index: Int, onClick: () -> Un
         Column {
             Box(Modifier.fillMaxWidth().aspectRatio(0.82f).background(WizPanelHi)) {
                 img?.let { Image(it, null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
+                if (v.size > 1) {
+                    // Count badge, bottom-right: how many snaps sit under this header.
+                    Row(
+                        Modifier.align(Alignment.BottomEnd).padding(8.dp).clip(RoundedCornerShape(50)).background(WizAccent)
+                            .padding(horizontal = 9.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Filled.PhotoLibrary, null, tint = WizNavy, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("${v.size}", color = WizNavy, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                    }
+                }
                 if (n.driveId != null && n.driveId != "-" && DriveBackup.email != null) {
                     Box(
                         Modifier.align(Alignment.TopStart).padding(8.dp).size(26.dp).clip(CircleShape).background(WizGlass),
@@ -316,15 +356,21 @@ private fun NoteCard(n: Note, terms: List<String>, index: Int, onClick: () -> Un
                     highlight(n.header, terms), color = WizText, style = MaterialTheme.typography.titleSmall,
                     maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
-                if (n.body.isNotBlank()) {
+                val shownBody = v.notes.firstOrNull { SearchText.matches(it.body, terms).isNotEmpty() }?.body
+                    ?: v.notes.last().body.ifBlank { v.notes.firstOrNull { it.body.isNotBlank() }?.body ?: "" }
+                if (shownBody.isNotBlank()) {
                     Spacer(Modifier.height(3.dp))
                     Text(
-                        highlight(SearchText.snippet(n.body, terms, 70), terms), color = WizMuted,
+                        highlight(SearchText.snippet(shownBody, terms, 70), terms), color = WizMuted,
                         style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis
                     )
                 }
                 Spacer(Modifier.height(6.dp))
-                Text(cardDate.format(Date(n.createdMs)), color = WizAccent.copy(alpha = .8f), style = MaterialTheme.typography.labelSmall)
+                Text(
+                    listOfNotNull(v.notes.firstNotNullOfOrNull { it.place }, Timeline.time(v.latestMs)).joinToString(" · "),
+                    color = WizAccent.copy(alpha = .8f), style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1, overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

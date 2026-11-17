@@ -22,8 +22,23 @@ data class Note(
     /** Copy in the phone gallery (Pictures/Wiz Snap Notes), if it was saved there. */
     val galleryUri: String?,
     /** Google Drive file id once the photo is backed up, else null. */
-    val driveId: String? = null
-)
+    val driveId: String? = null,
+    /** Snaps taken under one header in one go share this id (the first snap's id). */
+    val visitId: Long = 0,
+    /** Where the photo was taken, only when the user turned "Stamp location" on and the phone had a fix. */
+    val lat: Double? = null,
+    val lng: Double? = null,
+    /** Place name from the geocoder, null when offline. */
+    val place: String? = null
+) {
+    val hasLocation get() = lat != null && lng != null
+}
+
+/** Notes grouped by [Note.visitId], newest snap first inside [notes]. */
+data class Visit(val id: Long, val notes: List<Note>, val size: Int) {
+    val cover get() = notes.last()
+    val latestMs get() = notes.first().createdMs
+}
 
 enum class DateRange(val label: String, val days: Int) {
     ALL("All", 0), TODAY("Today", 1), WEEK("7 days", 7), MONTH("30 days", 30)
@@ -34,7 +49,7 @@ enum class DateRange(val label: String, val days: Int) {
  * and recipients so search stays instant with thousands of photos. Everything stays on the phone.
  */
 class NoteStore private constructor(context: Context) :
-    SQLiteOpenHelper(context.applicationContext, "snapnotes.db", null, 2) {
+    SQLiteOpenHelper(context.applicationContext, "snapnotes.db", null, 3) {
 
     val notesDir = File(context.applicationContext.filesDir, "notes").apply { mkdirs() }
     val thumbsDir = File(context.applicationContext.filesDir, "thumbs").apply { mkdirs() }
@@ -54,9 +69,14 @@ class NoteStore private constructor(context: Context) :
                 file TEXT NOT NULL,
                 thumb TEXT NOT NULL,
                 gallery TEXT,
-                drive_id TEXT)"""
+                drive_id TEXT,
+                visit_id INTEGER,
+                lat REAL,
+                lng REAL,
+                place TEXT)"""
         )
         db.execSQL("CREATE INDEX notes_created ON notes(created)")
+        db.execSQL("CREATE INDEX notes_visit ON notes(visit_id)")
         // unicode61 folds case for Hindi and other scripts too; fall back to the default tokenizer.
         try {
             db.execSQL("CREATE VIRTUAL TABLE notes_fts USING fts4(header, body, emails, tokenize=unicode61)")
@@ -69,6 +89,15 @@ class NoteStore private constructor(context: Context) :
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         if (oldVersion < 2) db.execSQL("ALTER TABLE notes ADD COLUMN drive_id TEXT")
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE notes ADD COLUMN visit_id INTEGER")
+            db.execSQL("ALTER TABLE notes ADD COLUMN lat REAL")
+            db.execSQL("ALTER TABLE notes ADD COLUMN lng REAL")
+            db.execSQL("ALTER TABLE notes ADD COLUMN place TEXT")
+            // Every older note is a visit of one.
+            db.execSQL("UPDATE notes SET visit_id = id")
+            db.execSQL("CREATE INDEX notes_visit ON notes(visit_id)")
+        }
     }
 
     fun insert(n: Note): Long {
@@ -83,11 +112,18 @@ class NoteStore private constructor(context: Context) :
                 put("file", n.file)
                 put("thumb", n.thumb)
                 put("gallery", n.galleryUri)
+                put("lat", n.lat)
+                put("lng", n.lng)
+                put("place", n.place)
             })
+            // A new visit is keyed by its first snap.
+            val visit = if (n.visitId > 0) n.visitId else id
+            db.update("notes", ContentValues().apply { put("visit_id", visit) }, "id = ?", arrayOf(id.toString()))
             db.insertOrThrow("notes_fts", null, ContentValues().apply {
                 put("docid", id)
                 put("header", n.header)
-                put("body", n.body)
+                // The place name is indexed with the notes, so searching the town finds the photo.
+                put("body", listOfNotNull(n.body, n.place).joinToString(" "))
                 put("emails", n.emails.joinToString(" "))
             })
             remember(db, "headers", "text", n.header, n.createdMs)
@@ -148,9 +184,9 @@ class NoteStore private constructor(context: Context) :
         } else if (terms.isNotEmpty()) {
             // Non-Latin scripts: plain substring match so Hindi words are always found.
             terms.forEach {
-                where += "(n.header LIKE ? OR n.body LIKE ? OR n.emails LIKE ?)"
+                where += "(n.header LIKE ? OR n.body LIKE ? OR n.emails LIKE ? OR n.place LIKE ?)"
                 val like = "%$it%"
-                args += like; args += like; args += like
+                args += like; args += like; args += like; args += like
             }
         }
         if (where.isNotEmpty()) sql.append(" WHERE ").append(where.joinToString(" AND "))
@@ -189,8 +225,27 @@ class NoteStore private constructor(context: Context) :
         file = c.getString(5),
         thumb = c.getString(6),
         galleryUri = c.getString(7),
-        driveId = c.getString(8)
+        driveId = c.getString(8),
+        visitId = if (c.isNull(9)) c.getLong(0) else c.getLong(9),
+        lat = if (c.isNull(10)) null else c.getDouble(10),
+        lng = if (c.isNull(11)) null else c.getDouble(11),
+        place = c.getString(12)
     )
+
+    /** All snaps of a visit, oldest first (the order they were taken). */
+    fun visit(visitId: Long): List<Note> = readableDatabase.rawQuery(
+        "SELECT $COLS FROM notes WHERE visit_id = ? ORDER BY created ASC, id ASC", arrayOf(visitId.toString())
+    ).use { c -> buildList { while (c.moveToNext()) add(row(c)) } }
+
+    /** Groups search hits into visits, newest visit first. Size counts every snap, not only hits. */
+    fun groupVisits(hits: List<Note>): List<Visit> {
+        if (hits.isEmpty()) return emptyList()
+        val sizes = HashMap<Long, Int>()
+        readableDatabase.rawQuery("SELECT visit_id, COUNT(*) FROM notes GROUP BY visit_id", null).use { c ->
+            while (c.moveToNext()) sizes[c.getLong(0)] = c.getInt(1)
+        }
+        return hits.groupBy { it.visitId }.map { (id, ns) -> Visit(id, ns, sizes[id] ?: ns.size) }
+    }
 
     /** Oldest first, so the backlog uploads in the order the photos were taken. */
     fun pendingBackup(limit: Int = 50): List<Note> = readableDatabase.rawQuery(
@@ -213,8 +268,8 @@ class NoteStore private constructor(context: Context) :
     }
 
     companion object {
-        private const val COLS = "id, created, header, body, emails, file, thumb, gallery, drive_id"
-        private const val N_COLS = "n.id, n.created, n.header, n.body, n.emails, n.file, n.thumb, n.gallery, n.drive_id"
+        private const val COLS = "id, created, header, body, emails, file, thumb, gallery, drive_id, visit_id, lat, lng, place"
+        private const val N_COLS = "n.id, n.created, n.header, n.body, n.emails, n.file, n.thumb, n.gallery, n.drive_id, n.visit_id, n.lat, n.lng, n.place"
         @Volatile private var instance: NoteStore? = null
         fun get(context: Context): NoteStore =
             instance ?: synchronized(this) { instance ?: NoteStore(context).also { instance = it } }

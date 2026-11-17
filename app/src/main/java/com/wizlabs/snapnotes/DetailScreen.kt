@@ -69,19 +69,24 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material3.IconButton
+
+/** One visit: the header once, then every snap under it in the order they were taken. */
 @Composable
-fun DetailScreen(id: Long, onBack: () -> Unit) {
+fun DetailScreen(visitId: Long, onBack: () -> Unit, onAddSnap: (VisitDraft) -> Unit) {
     val context = LocalContext.current
     val store = remember { NoteStore.get(context) }
     val scope = rememberCoroutineScope()
-    var note by remember { mutableStateOf<Note?>(null) }
-    var missing by remember { mutableStateOf(false) }
-    var confirmDelete by remember { mutableStateOf(false) }
-    LaunchedEffect(id, store.version) {
-        note = withContext(Dispatchers.IO) { store.get(id) }
-        missing = note == null
+    var notes by remember { mutableStateOf<List<Note>?>(null) }
+    var confirmDelete by remember { mutableStateOf<List<Note>?>(null) }
+    LaunchedEffect(visitId, store.version) {
+        notes = withContext(Dispatchers.IO) { store.visit(visitId) }
     }
-    val n = note
+    val list = notes
+    val first = list?.firstOrNull()
 
     Column(Modifier.fillMaxSize().background(WizNavy)) {
         Row(
@@ -91,11 +96,14 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
             GlassIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack)
             Spacer(Modifier.width(12.dp))
             Text(
-                n?.let { Stamp.timeLabel(it.createdMs) } ?: "", color = WizMuted,
-                style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f)
+                first?.let {
+                    val count = if (list.size > 1) " · ${list.size} snaps" else ""
+                    Stamp.timeLabel(it.createdMs) + count
+                } ?: "",
+                color = WizMuted, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f), maxLines = 1
             )
-            if (n != null && DriveBackup.email != null) {
-                val saved = n.driveId != null && n.driveId != "-"
+            if (list != null && list.isNotEmpty() && DriveBackup.email != null) {
+                val saved = list.all { it.driveId != null && it.driveId != "-" }
                 Icon(
                     if (saved) Icons.Filled.CloudDone else Icons.Filled.CloudQueue,
                     if (saved) "Backed up to Google Drive" else "Waiting to back up",
@@ -103,35 +111,65 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
                     modifier = Modifier.padding(end = 10.dp).size(22.dp)
                 )
             }
-            if (n != null) GlassIconButton(Icons.Filled.DeleteOutline, "Delete", { confirmDelete = true })
+            if (!list.isNullOrEmpty()) GlassIconButton(Icons.Filled.DeleteOutline, "Delete", { confirmDelete = list })
         }
-        if (n == null) {
+        if (list == null || first == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                if (missing) Text("This note was deleted.", color = WizMuted) else CircularProgressIndicator(color = WizAccent)
+                if (list != null) Text("This note was deleted.", color = WizMuted) else CircularProgressIndicator(color = WizAccent)
             }
             return@Column
         }
+        val multi = list.size > 1
+        val spot = list.firstOrNull { it.hasLocation }
 
         Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
-            ZoomImage(n)
-            Spacer(Modifier.height(18.dp))
             Column(Modifier.fillMaxWidth().enterRise(0).clip(RoundedCornerShape(20.dp)).background(WizPanel).padding(16.dp)) {
                 FieldLabel("HEADER")
-                Text(n.header, color = WizText, style = MaterialTheme.typography.titleLarge)
-                if (n.body.isNotBlank()) {
-                    Spacer(Modifier.height(16.dp))
-                    FieldLabel("NOTES")
-                    Text(n.body, color = WizText, style = MaterialTheme.typography.bodyLarge)
+                Text(first.header, color = WizText, style = MaterialTheme.typography.titleLarge)
+                if (spot != null) {
+                    Spacer(Modifier.height(10.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.LocationOn, null, tint = WizAccent, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            Stamp.locationLabel(Spot(spot.lat!!, spot.lng!!, spot.place)),
+                            color = WizText, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { Mailer.openMap(context, spot.lat, spot.lng) }) {
+                            Icon(Icons.Filled.Map, "Open in maps", tint = WizAccent)
+                        }
+                    }
                 }
-                if (n.emails.isNotEmpty()) {
+                if (first.emails.isNotEmpty()) {
                     Spacer(Modifier.height(16.dp))
                     FieldLabel("MAIL TO")
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        n.emails.forEach {
+                        first.emails.forEach {
                             Surface(shape = RoundedCornerShape(50), color = WizAccent.copy(alpha = .14f), border = BorderStroke(1.dp, WizAccent.copy(alpha = .4f))) {
                                 Text(it, color = WizText, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp))
                             }
                         }
+                    }
+                }
+            }
+
+            list.forEachIndexed { i, n ->
+                Spacer(Modifier.height(18.dp))
+                if (multi) {
+                    Row(Modifier.fillMaxWidth().padding(start = 2.dp, bottom = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text("SNAP ${i + 1}/${list.size}", color = WizAccent, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
+                        Text("  ·  ${Timeline.time(n.createdMs)}", color = WizMuted, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f))
+                        IconButton(onClick = { confirmDelete = listOf(n) }) {
+                            Icon(Icons.Filled.DeleteOutline, "Delete snap ${i + 1}", tint = WizMuted, modifier = Modifier.size(20.dp))
+                        }
+                    }
+                }
+                ZoomImage(n)
+                if (n.body.isNotBlank()) {
+                    Spacer(Modifier.height(10.dp))
+                    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(WizPanel).padding(14.dp)) {
+                        FieldLabel("NOTES")
+                        Text(n.body, color = WizText, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             }
@@ -140,49 +178,85 @@ fun DetailScreen(id: Long, onBack: () -> Unit) {
 
         Row(
             Modifier.fillMaxWidth().background(WizBar).navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             OutlinedButton(
-                onClick = { Mailer.share(context, n) },
+                onClick = { Mailer.share(context, list) },
                 border = BorderStroke(1.dp, WizAccent.copy(alpha = .6f)),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = WizAccent),
                 shape = RoundedCornerShape(16.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
                 modifier = Modifier.weight(1f).height(54.dp)
             ) {
                 Icon(Icons.Filled.Share, null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Share", style = MaterialTheme.typography.titleSmall)
+                Spacer(Modifier.width(6.dp))
+                Text("Share", style = MaterialTheme.typography.titleSmall, maxLines = 1)
+            }
+            OutlinedButton(
+                onClick = {
+                    onAddSnap(VisitDraft(visitId, first.header, first.emails, list.any { it.hasLocation }, list.size + 1))
+                },
+                border = BorderStroke(1.dp, WizAccent.copy(alpha = .6f)),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = WizAccent),
+                shape = RoundedCornerShape(16.dp),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
+                modifier = Modifier.weight(1f).height(54.dp)
+            ) {
+                Icon(Icons.Filled.AddAPhoto, null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("+ Snap", style = MaterialTheme.typography.titleSmall, maxLines = 1)
             }
             Button(
-                onClick = { Mailer.mail(context, n) },
+                onClick = { Mailer.mail(context, list) },
                 colors = ButtonDefaults.buttonColors(containerColor = WizAccent, contentColor = WizNavy),
                 shape = RoundedCornerShape(16.dp),
-                modifier = Modifier.weight(1.4f).height(54.dp)
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp),
+                modifier = Modifier.weight(1.3f).height(54.dp)
             ) {
                 Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text("Send Mail", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.width(6.dp))
+                Text(if (multi) "Mail all" else "Send Mail", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, maxLines = 1)
             }
         }
     }
 
-    if (confirmDelete && n != null) {
+    val doomed = confirmDelete
+    if (doomed != null && list != null) {
+        val all = doomed.size == list.size
+        val onDrive = doomed.any { it.driveId != null && it.driveId != "-" }
         AlertDialog(
-            onDismissRequest = { confirmDelete = false },
+            onDismissRequest = { confirmDelete = null },
             containerColor = WizPanel,
-            title = { Text("Delete this photo note?", color = WizText) },
-            text = { Text("It is removed from Snap Notes and from Pictures/Wiz Snap Notes. This cannot be undone." + if (n?.driveId != null && n.driveId != "-") " The copy in your Google Drive stays." else "", color = WizMuted) },
+            title = {
+                Text(
+                    when {
+                        doomed.size == 1 && !all -> "Delete this snap?"
+                        doomed.size == 1 -> "Delete this photo note?"
+                        else -> "Delete all ${doomed.size} snaps?"
+                    },
+                    color = WizText
+                )
+            },
+            text = {
+                Text(
+                    "Removed from Snap Notes and from Pictures/Wiz Snap Notes. This cannot be undone." +
+                        if (onDrive) " The copy in your Google Drive stays." else "",
+                    color = WizMuted
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
-                    confirmDelete = false
+                    confirmDelete = null
                     scope.launch {
-                        Thumbs.evict(n.thumb)
-                        PhotoPipeline.delete(context, n)
-                        onBack()
+                        doomed.forEach {
+                            Thumbs.evict(it.thumb)
+                            PhotoPipeline.delete(context, it)
+                        }
+                        if (all) onBack()
                     }
                 }) { Text("Delete", color = WizBad) }
             },
-            dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("Cancel", color = WizAccent) } }
+            dismissButton = { TextButton(onClick = { confirmDelete = null }) { Text("Cancel", color = WizAccent) } }
         )
     }
 }

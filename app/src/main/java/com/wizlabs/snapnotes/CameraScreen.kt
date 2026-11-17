@@ -80,7 +80,7 @@ import kotlin.math.sin
 private val flashModes = intArrayOf(ImageCapture.FLASH_MODE_OFF, ImageCapture.FLASH_MODE_AUTO, ImageCapture.FLASH_MODE_ON)
 
 @Composable
-fun CameraScreen(onBack: () -> Unit, onCaptured: (File) -> Unit) {
+fun CameraScreen(onBack: () -> Unit, onCaptured: (File) -> Unit, visitLabel: String? = null) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
@@ -174,9 +174,12 @@ fun CameraScreen(onBack: () -> Unit, onCaptured: (File) -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 GlassIconButton(Icons.AutoMirrored.Filled.ArrowBack, "Back", onBack)
-                Spacer(Modifier.weight(1f))
-                Text("NEW SNAP", color = WizAccent, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.weight(1f))
+                Text(
+                    visitLabel ?: "NEW SNAP", color = WizAccent, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold,
+                    maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    modifier = Modifier.weight(1f).padding(horizontal = 12.dp)
+                )
                 GlassIconButton(
                     when (flash) { 1 -> Icons.Filled.FlashAuto; 2 -> Icons.Filled.FlashOn; else -> Icons.Filled.FlashOff },
                     "Flash", { flash = (flash + 1) % 3 }, active = flash != 0,

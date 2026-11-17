@@ -25,10 +25,22 @@ object Stamp {
 
     private val bold = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
 
-    fun timeLabel(ms: Long): String =
-        SimpleDateFormat("d MMM yyyy · h:mm a", Locale.ENGLISH).format(Date(ms))
+    /** Date and time in the phone's own language and 12/24-hour style. */
+    fun timeLabel(ms: Long): String {
+        val l = Locale.getDefault()
+        val date = android.text.format.DateFormat.getBestDateTimePattern(l, "dMMMyyyy")
+        val time = android.text.format.DateFormat.getBestDateTimePattern(l, "jmm")
+        return SimpleDateFormat("$date · $time", l).format(Date(ms))
+    }
 
-    fun draw(canvas: Canvas, w: Int, h: Int, header: String, body: String, timeMs: Long) {
+    /** "Naini Tal · 29.38030, 79.46360", or only the numbers when there is no place name. */
+    fun locationLabel(spot: Spot): String = listOfNotNull(spot.place, spot.coords).joinToString(" · ")
+
+    /**
+     * [seq] is the snap's number inside its visit; 2 and up are printed as "#2" next to the time.
+     * [spot] adds a location line under the time; null leaves the stamp exactly as before.
+     */
+    fun draw(canvas: Canvas, w: Int, h: Int, header: String, body: String, timeMs: Long, seq: Int = 1, spot: Spot? = null) {
         val u = minOf(w, h) / 100f
         val pad = 3.6f * u
         val fill = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -47,7 +59,12 @@ object Stamp {
         val textWidth = (w - textLeft - pad).toInt().coerceAtLeast(1)
         val headerLayout = layout(header.trim().ifEmpty { " " }, headerPaint, textWidth, 2)
         val metaH = metaPaint.fontSpacing
-        val topH = pad + headerLayout.height + 1.1f * u + metaH + pad * 0.85f
+        val locPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = WHITE; textSize = 2.6f * u }
+        val locText = spot?.let {
+            TextUtils.ellipsize(locationLabel(it), locPaint, textWidth.toFloat(), TextUtils.TruncateAt.END).toString()
+        }
+        val locH = if (locText != null) 0.6f * u + locPaint.fontSpacing else 0f
+        val topH = pad + headerLayout.height + 1.1f * u + metaH + locH + pad * 0.85f
 
         fill.color = BAND
         canvas.drawRect(0f, 0f, w.toFloat(), topH, fill)
@@ -60,7 +77,11 @@ object Stamp {
         canvas.restore()
 
         val metaBaseline = pad + headerLayout.height + 1.1f * u - metaPaint.ascent()
-        canvas.drawText(timeLabel(timeMs), textLeft, metaBaseline, metaPaint)
+        val meta = if (seq >= 2) "${timeLabel(timeMs)}  ·  #$seq" else timeLabel(timeMs)
+        canvas.drawText(meta, textLeft, metaBaseline, metaPaint)
+        if (locText != null) {
+            canvas.drawText(locText, textLeft, metaBaseline + metaPaint.descent() + 0.6f * u - locPaint.ascent(), locPaint)
+        }
         val brand = "WIZ SNAP NOTES"
         canvas.drawText(brand, w - pad - brandPaint.measureText(brand), metaBaseline, brandPaint)
 

@@ -18,24 +18,48 @@ object Mailer {
     fun photoUri(context: Context, note: Note): Uri =
         FileProvider.getUriForFile(context, context.packageName + ".files", File(note.file))
 
-    fun body(note: Note): String = buildString {
-        append(note.header).append('\n')
-        append(Stamp.timeLabel(note.createdMs)).append("\n\n")
-        if (note.body.isNotBlank()) append(note.body.trim()).append("\n\n")
+    /** One email body for a visit: header, time, place + map link, then every snap's notes. */
+    fun body(notes: List<Note>): String = buildString {
+        val first = notes.first()
+        append(first.header).append('\n')
+        append(Stamp.timeLabel(first.createdMs))
+        if (notes.size > 1) append(" · ").append(notes.size).append(" photos")
+        append('\n')
+        notes.firstOrNull { it.hasLocation }?.let { n ->
+            append(Stamp.locationLabel(Spot(n.lat!!, n.lng!!, n.place))).append('\n')
+            append(Spot.mapsLink(n.lat, n.lng)).append('\n')
+        }
+        append('\n')
+        if (notes.size == 1) {
+            if (first.body.isNotBlank()) append(first.body.trim()).append("\n\n")
+        } else {
+            notes.forEachIndexed { i, n ->
+                append("Photo ").append(i + 1).append(" · ").append(Timeline.time(n.createdMs)).append('\n')
+                if (n.body.isNotBlank()) append(n.body.trim()).append('\n')
+                append('\n')
+            }
+        }
         append("Sent with Wiz Snap Notes")
     }
 
-    fun mail(context: Context, note: Note) {
-        val uri = photoUri(context, note)
-        val base = Intent(Intent.ACTION_SEND).apply {
+    private fun sendIntent(context: Context, notes: List<Note>): Intent {
+        val uris = ArrayList(notes.map { photoUri(context, it) })
+        val first = notes.first()
+        return Intent(if (uris.size > 1) Intent.ACTION_SEND_MULTIPLE else Intent.ACTION_SEND).apply {
             type = "image/jpeg"
-            putExtra(Intent.EXTRA_EMAIL, note.emails.toTypedArray())
-            putExtra(Intent.EXTRA_SUBJECT, note.header)
-            putExtra(Intent.EXTRA_TEXT, body(note))
-            putExtra(Intent.EXTRA_STREAM, uri)
-            clipData = ClipData.newRawUri(note.header, uri)
+            putExtra(Intent.EXTRA_SUBJECT, first.header)
+            putExtra(Intent.EXTRA_TEXT, body(notes))
+            if (uris.size > 1) putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+            else putExtra(Intent.EXTRA_STREAM, uris.first())
+            clipData = ClipData.newRawUri(first.header, uris.first()).apply { uris.drop(1).forEach { addItem(ClipData.Item(it)) } }
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+    }
+
+    /** Every snap of the visit in one email. */
+    fun mail(context: Context, notes: List<Note>) {
+        if (notes.isEmpty()) return
+        val base = sendIntent(context, notes).apply { putExtra(Intent.EXTRA_EMAIL, notes.first().emails.toTypedArray()) }
         // Straight into Gmail's compose screen when it is installed; otherwise let the user pick a
         // mail app. Gmail also offers a "Chat" share target, so the package alone would show a
         // picker; naming the compose activity skips it.
@@ -51,6 +75,13 @@ object Mailer {
         }
     }
 
+    fun openMap(context: Context, lat: Double, lng: Double) {
+        val geo = Intent(Intent.ACTION_VIEW, Uri.parse(String.format(java.util.Locale.US, "geo:%.6f,%.6f?q=%.6f,%.6f", lat, lng, lat, lng)))
+        runCatching { context.startActivity(geo) }.onFailure {
+            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Spot.mapsLink(lat, lng)))) }
+        }
+    }
+
     private fun gmailCompose(context: Context, base: Intent): Intent? {
         val probe = Intent(base).setPackage(GMAIL)
         val targets = context.packageManager.queryIntentActivities(probe, 0)
@@ -61,16 +92,8 @@ object Mailer {
     }
 
     /** WhatsApp, Drive and the rest: a normal share sheet. */
-    fun share(context: Context, note: Note) {
-        val uri = photoUri(context, note)
-        val send = Intent(Intent.ACTION_SEND).apply {
-            type = "image/jpeg"
-            putExtra(Intent.EXTRA_SUBJECT, note.header)
-            putExtra(Intent.EXTRA_TEXT, body(note))
-            putExtra(Intent.EXTRA_STREAM, uri)
-            clipData = ClipData.newRawUri(note.header, uri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-        runCatching { context.startActivity(Intent.createChooser(send, "Share photo note")) }
+    fun share(context: Context, notes: List<Note>) {
+        if (notes.isEmpty()) return
+        runCatching { context.startActivity(Intent.createChooser(sendIntent(context, notes), "Share photo note")) }
     }
 }

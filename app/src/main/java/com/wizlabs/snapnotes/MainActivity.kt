@@ -42,14 +42,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/** Adding another snap to a visit: the header, recipients and location choice carry over. */
+data class VisitDraft(val visitId: Long, val header: String, val emails: List<String>, val location: Boolean, val next: Int)
+
+enum class SaveAction { SAVE, MAIL, MORE }
 
 /** Simple screen stack; Home is the root. */
 sealed interface Screen {
     val depth: Int
     data object Home : Screen { override val depth = 0 }
-    data object Camera : Screen { override val depth = 1 }
-    data class Editor(val raw: File) : Screen { override val depth = 2 }
-    data class Detail(val id: Long) : Screen { override val depth = 1 }
+    data class Camera(val visit: VisitDraft? = null) : Screen { override val depth = 1 }
+    data class Editor(val raw: File, val visit: VisitDraft?) : Screen { override val depth = 2 }
+    /** One visit: every snap taken under the same header in one go. */
+    data class Detail(val visitId: Long) : Screen { override val depth = 1 }
     data object About : Screen { override val depth = 1 }
     data object Backup : Screen { override val depth = 1 }
 }
@@ -84,8 +93,15 @@ class MainActivity : ComponentActivity() {
 private fun App() {
     var screen by remember { mutableStateOf<Screen>(Screen.Home) }
     val context = LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    fun mailVisit(visitId: Long) = scope.launch {
+        val notes = withContext(Dispatchers.IO) { NoteStore.get(context).visit(visitId) }
+        if (notes.isNotEmpty()) Mailer.mail(context, notes)
+    }
+    // Back from a camera opened for another snap returns to that visit, not Home.
+    val backTo: Screen = (screen as? Screen.Camera)?.visit?.let { Screen.Detail(it.visitId) } ?: Screen.Home
 
-    WizBackHandler(screen.toString(), enabled = screen != Screen.Home && screen !is Screen.Editor) { screen = Screen.Home }
+    WizBackHandler(screen.toString(), enabled = screen != Screen.Home && screen !is Screen.Editor) { screen = backTo }
     val peek = LocalBackPeek.current
     // Once the back transition has played, drop the peek so the next visit starts full size.
     LaunchedEffect(screen) { kotlinx.coroutines.delay(650); if (peek != null && !peek.dragging) peek.reset() }
@@ -100,25 +116,38 @@ private fun App() {
         label = "screen"
     ) { s ->
       // Camera preview is a SurfaceView, which ignores layer transforms: no peek there.
-      Box(if (s == Screen.Camera) Modifier.fillMaxSize() else Modifier.fillMaxSize().backPeek(s.toString())) {
+      Box(if (s is Screen.Camera) Modifier.fillMaxSize() else Modifier.fillMaxSize().backPeek(s.toString())) {
         when (s) {
             Screen.Home -> HomeScreen(
-                onSnap = { screen = Screen.Camera },
+                onSnap = { screen = Screen.Camera() },
                 onOpen = { screen = Screen.Detail(it) },
                 onAbout = { screen = Screen.About },
                 onBackup = { screen = Screen.Backup }
             )
-            Screen.Camera -> CameraScreen(onBack = { screen = Screen.Home }, onCaptured = { screen = Screen.Editor(it) })
+            is Screen.Camera -> CameraScreen(
+                onBack = { screen = s.visit?.let { Screen.Detail(it.visitId) } ?: Screen.Home },
+                onCaptured = { screen = Screen.Editor(it, s.visit) },
+                visitLabel = s.visit?.let { "Snap ${it.next} · ${it.header}" }
+            )
             is Screen.Editor -> EditorScreen(
                 raw = s.raw,
-                onCancel = { screen = Screen.Camera },
-                onSaved = { note, mail ->
-                    screen = Screen.Detail(note.id)
+                visit = s.visit,
+                onCancel = { screen = Screen.Camera(s.visit) },
+                onSaved = { note, action, loc, seq ->
                     DriveBackup.sync(context)
-                    if (mail) Mailer.mail(context, note)
+                    screen = if (action == SaveAction.MORE) {
+                        Screen.Camera(VisitDraft(note.visitId, note.header, note.emails, loc, seq + 1))
+                    } else Screen.Detail(note.visitId)
+                    if (action == SaveAction.MAIL) {
+                        if (s.visit == null) Mailer.mail(context, listOf(note)) else mailVisit(note.visitId)
+                    }
                 }
             )
-            is Screen.Detail -> DetailScreen(s.id, onBack = { screen = Screen.Home })
+            is Screen.Detail -> DetailScreen(
+                s.visitId,
+                onBack = { screen = Screen.Home },
+                onAddSnap = { screen = Screen.Camera(it) }
+            )
             Screen.About -> AboutScreen(onBack = { screen = Screen.Home })
             Screen.Backup -> BackupScreen(onBack = { screen = Screen.Home })
         }

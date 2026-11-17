@@ -90,17 +90,31 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Lock
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withTimeoutOrNull
 
 @Composable
-fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Unit) {
+fun EditorScreen(
+    raw: File,
+    visit: VisitDraft?,
+    onCancel: () -> Unit,
+    onSaved: (note: Note, action: SaveAction, stampLocation: Boolean, seq: Int) -> Unit
+) {
     val context = LocalContext.current
     val store = remember { NoteStore.get(context) }
     val scope = rememberCoroutineScope()
     val timeMs = remember { System.currentTimeMillis() }
+    val seq = visit?.next ?: 1
 
-    var header by remember { mutableStateOf("") }
+    var header by remember { mutableStateOf(visit?.header ?: "") }
     var body by remember { mutableStateOf(TextFieldValue("")) }
-    val emails = remember { mutableStateListOf<String>() }
+    val emails = remember { mutableStateListOf<String>().apply { visit?.emails?.let { addAll(it) } } }
     var emailText by remember { mutableStateOf("") }
     var headerError by remember { mutableStateOf(false) }
     var emailError by remember { mutableStateOf<String?>(null) }
@@ -109,6 +123,41 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
     var confirmDiscard by remember { mutableStateOf(false) }
     var recentHeaders by remember { mutableStateOf(emptyList<String>()) }
     var suggestions by remember { mutableStateOf(emptyList<String>()) }
+
+    // ---- Stamp location: chosen per visit, every snap under this header follows it ----------
+    var stampLoc by remember { mutableStateOf(visit?.location ?: false) }
+    var spot by remember { mutableStateOf<Spot?>(null) }
+    var locating by remember { mutableStateOf(false) }
+    var locNote by remember { mutableStateOf<String?>(null) }
+    var locJob by remember { mutableStateOf<Job?>(null) }
+    fun startLocate() {
+        if (locJob != null || spot != null) return
+        if (!Locator.enabled(context)) { locNote = "Location is off on this phone. The photo will be saved without it."; return }
+        locating = true; locNote = null
+        locJob = scope.launch {
+            try {
+                val s = Locator.locate(context)
+                spot = s
+                if (s == null) locNote = "No GPS fix. The photo will be saved without location."
+            } finally {
+                locating = false
+                locJob = null // switching it off and on again retries
+            }
+        }
+    }
+    val askLocation = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { res ->
+        if (res.values.any { it }) startLocate()
+        else { stampLoc = false; locNote = "Location permission denied. Photos are saved without location." }
+    }
+    fun setStampLoc(on: Boolean) {
+        stampLoc = on
+        locNote = null
+        if (!on) return
+        if (Locator.granted(context)) startLocate()
+        else askLocation.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+    }
+    LaunchedEffect(Unit) { if (stampLoc && Locator.granted(context)) startLocate() }
+    val stampSpot = if (stampLoc) spot else null
 
     LaunchedEffect(Unit) { recentHeaders = withContext(Dispatchers.IO) { store.recentHeaders() } }
     LaunchedEffect(emailText, emails.size) {
@@ -124,7 +173,7 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
     LaunchedEffect(raw) {
         base = withContext(Dispatchers.IO) { runCatching { PhotoPipeline.loadUpright(raw, PhotoPipeline.PREVIEW_SIDE) }.getOrNull() }
     }
-    LaunchedEffect(base, header, body.text) {
+    LaunchedEffect(base, header, body.text, stampSpot) {
         val b = base ?: return@LaunchedEffect
         delay(90) // debounce while typing
         val next = flip xor 1
@@ -133,7 +182,7 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                 ?: Bitmap.createBitmap(b.width, b.height, Bitmap.Config.ARGB_8888).also { buffers[next] = it }
             val c = Canvas(buf)
             c.drawBitmap(b, 0f, 0f, null)
-            Stamp.draw(c, b.width, b.height, header.ifBlank { "Add a header" }, body.text, timeMs)
+            Stamp.draw(c, b.width, b.height, header.ifBlank { "Add a header" }, body.text, timeMs, seq, stampSpot)
             buf
         }
         flip = next
@@ -164,17 +213,23 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
         return bad.isEmpty()
     }
 
-    fun save(mail: Boolean) {
+    fun save(action: SaveAction) {
         if (saving) return
         if (header.isBlank()) { headerError = true; return }
         if (emailText.isNotBlank() && !commitEmails(emailText)) return
         saving = true
         scope.launch {
             try {
-                val note = PhotoPipeline.save(context, raw, header, body.text, emails.toList(), timeMs)
+                // A fix still on its way gets a few more seconds; after that the photo goes without it.
+                if (stampLoc && locating) withTimeoutOrNull(4_000L) { locJob?.join() }
+                val useSpot = if (stampLoc) spot else null
+                val note = PhotoPipeline.save(
+                    context, raw, header, body.text, emails.toList(), timeMs,
+                    visitId = visit?.visitId ?: 0, seq = seq, spot = useSpot
+                )
                 saved = true
                 delay(650)
-                onSaved(note, mail)
+                onSaved(note, action, stampLoc, seq)
             } catch (e: Exception) {
                 saving = false
                 emailError = "Could not save: ${e.localizedMessage ?: "storage error"}"
@@ -193,7 +248,7 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                 GlassIconButton(Icons.Filled.Close, "Discard", { confirmDiscard = true })
                 Spacer(Modifier.width(12.dp))
                 Column {
-                    Text("Write the note", color = WizText, style = MaterialTheme.typography.titleMedium)
+                    Text(if (visit != null) "Snap $seq · ${visit.header}" else "Write the note", color = WizText, style = MaterialTheme.typography.titleMedium, maxLines = 1)
                     Text(Stamp.timeLabel(timeMs), color = WizMuted, style = MaterialTheme.typography.bodySmall)
                 }
             }
@@ -240,11 +295,13 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                 }
 
                 Spacer(Modifier.height(18.dp))
-                FieldLabel("HEADER", required = true)
+                FieldLabel("HEADER", required = true, hint = if (visit != null) "same for every snap of this visit" else null)
                 OutlinedTextField(
                     value = header,
+                    readOnly = visit != null,
+                    trailingIcon = if (visit != null) {{ Icon(Icons.Filled.Lock, "Locked for this visit", tint = WizMuted) }} else null,
                     onValueChange = { header = it.take(90).replace("\n", " "); headerError = false },
-                    placeholder = { Text("e.g. HPCL Sector 12 · Tank 2 dip", color = WizMuted) },
+                    placeholder = { Text("e.g. Site name · Room 2", color = WizMuted) },
                     singleLine = true,
                     isError = headerError,
                     supportingText = if (headerError) {{ Text("Header is required. It goes on top of the photo.") }} else null,
@@ -253,7 +310,8 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                     shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (recentHeaders.isNotEmpty()) {
+                LocationSwitch(stampLoc, locating, stampSpot, locNote, ::setStampLoc)
+                if (recentHeaders.isNotEmpty() && visit == null) {
                     Row(
                         Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(top = 10.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -281,7 +339,7 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                 OutlinedTextField(
                     value = body,
                     onValueChange = { body = it },
-                    placeholder = { Text("Points to remember: nozzle 3 leaking, stock 4,200 L, call dealer…", color = WizMuted) },
+                    placeholder = { Text(if (visit != null) "What is this snap about? e.g. second issue, crack near the door…" else "Points to remember: leak near the pump, reading 4,200, call the owner…", color = WizMuted) },
                     minLines = 4,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                     colors = wizFieldColors(),
@@ -290,7 +348,7 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                 )
 
                 Spacer(Modifier.height(18.dp))
-                FieldLabel("MAIL TO", hint = "optional · dealer IDs")
+                FieldLabel("MAIL TO", hint = "optional")
                 if (emails.isNotEmpty()) {
                     FlowRow(
                         Modifier.padding(bottom = 10.dp),
@@ -304,7 +362,7 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                         emailError = null
                         if (v.any { it == ',' || it == ' ' || it == ';' || it == '\n' }) commitEmails(v) else emailText = v
                     },
-                    placeholder = { Text("dealer@example.com", color = WizMuted) },
+                    placeholder = { Text("name@example.com", color = WizMuted) },
                     leadingIcon = { Icon(Icons.Filled.AlternateEmail, null, tint = WizMuted) },
                     singleLine = true,
                     isError = emailError != null,
@@ -336,23 +394,39 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 OutlinedButton(
-                    onClick = { save(false) },
+                    onClick = { save(SaveAction.SAVE) },
                     enabled = !saving,
                     border = BorderStroke(1.dp, WizAccent.copy(alpha = .6f)),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = WizAccent),
                     shape = RoundedCornerShape(16.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
                     modifier = Modifier.weight(1f).height(54.dp)
                 ) { Text("Save", style = MaterialTheme.typography.titleSmall) }
+                // Saves this snap and opens the camera again under the same header.
+                OutlinedButton(
+                    onClick = { save(SaveAction.MORE) },
+                    enabled = !saving,
+                    border = BorderStroke(1.dp, WizAccent.copy(alpha = .6f)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = WizAccent),
+                    shape = RoundedCornerShape(16.dp),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 8.dp),
+                    modifier = Modifier.weight(1f).height(54.dp)
+                ) {
+                    Icon(Icons.Filled.AddAPhoto, null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("+ Snap", style = MaterialTheme.typography.titleSmall, maxLines = 1)
+                }
                 Button(
-                    onClick = { save(true) },
+                    onClick = { save(SaveAction.MAIL) },
                     enabled = !saving,
                     colors = ButtonDefaults.buttonColors(containerColor = WizAccent, contentColor = WizNavy),
                     shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.weight(1.4f).height(54.dp)
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 10.dp),
+                    modifier = Modifier.weight(1.3f).height(54.dp)
                 ) {
                     Icon(Icons.AutoMirrored.Filled.Send, null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Save & Mail", style = MaterialTheme.typography.titleSmall)
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (visit != null) "Mail all" else "Save & Mail", style = MaterialTheme.typography.titleSmall, maxLines = 1)
                 }
             }
         }
@@ -374,11 +448,33 @@ fun EditorScreen(raw: File, onCancel: () -> Unit, onSaved: (Note, Boolean) -> Un
             onDismissRequest = { confirmDiscard = false },
             containerColor = WizPanel,
             title = { Text("Discard this photo?", color = WizText) },
-            text = { Text("The photo and note will not be saved.", color = WizMuted) },
+            text = { Text(if (visit != null) "This snap will not be saved. Earlier snaps of the visit stay." else "The photo and note will not be saved.", color = WizMuted) },
             confirmButton = {
                 TextButton(onClick = { confirmDiscard = false; raw.delete(); onCancel() }) { Text("Discard", color = WizBad) }
             },
             dismissButton = { TextButton(onClick = { confirmDiscard = false }) { Text("Keep editing", color = WizAccent) } }
+        )
+    }
+}
+
+/** "Stamp location" switch under the header, with what will be printed (or why nothing will). */
+@Composable
+private fun LocationSwitch(on: Boolean, locating: Boolean, spot: Spot?, note: String?, onChange: (Boolean) -> Unit) {
+    Column(
+        Modifier.fillMaxWidth().padding(top = 10.dp).clip(RoundedCornerShape(14.dp))
+            .background(if (on) WizAccent.copy(alpha = .10f) else WizPanel).padding(horizontal = 12.dp)
+    ) {
+        SwitchRow(
+            label = "Stamp location",
+            checked = on,
+            onChange = onChange,
+            hint = when {
+                !on -> note ?: "Print place and GPS on this visit's photos"
+                locating -> "Finding location…"
+                spot != null -> Stamp.locationLabel(spot)
+                else -> note ?: "Waiting for location…"
+            },
+            icon = Icons.Filled.LocationOn
         )
     }
 }

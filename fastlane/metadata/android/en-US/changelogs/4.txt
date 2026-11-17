@@ -1,0 +1,6 @@
+Wiz Snap Notes 1.3.0:
+• Several photos under one header: tap "+ Snap" to add the next issue to the same visit
+• One card per visit on Home, one email with every photo
+• Optional "Stamp location" under the header: place name and GPS printed on the photo
+• Timeline: notes grouped by Today, Yesterday and date
+• Dates and times follow your phone's language

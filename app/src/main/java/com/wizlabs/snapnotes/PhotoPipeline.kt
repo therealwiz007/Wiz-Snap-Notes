@@ -85,6 +85,9 @@ object PhotoPipeline {
         body: String,
         emails: List<String>,
         timeMs: Long,
+        visitId: Long = 0,
+        seq: Int = 1,
+        spot: Spot? = null,
         toGallery: Boolean = true
     ): Note = withContext(Dispatchers.IO) {
         val app = context.applicationContext
@@ -96,7 +99,7 @@ object PhotoPipeline {
 
         val bmp = loadUpright(raw, FULL_SIDE)
         try {
-            Stamp.draw(Canvas(bmp), bmp.width, bmp.height, header, body, timeMs)
+            Stamp.draw(Canvas(bmp), bmp.width, bmp.height, header, body, timeMs, seq, spot)
             FileOutputStream(full).use { bmp.compress(Bitmap.CompressFormat.JPEG, 92, it) }
             val s = THUMB_SIDE.toFloat() / maxOf(bmp.width, bmp.height)
             val small = Bitmap.createScaledBitmap(bmp, (bmp.width * s).toInt(), (bmp.height * s).toInt(), true)
@@ -105,16 +108,19 @@ object PhotoPipeline {
         } finally {
             bmp.recycle()
         }
-        writeExif(full, header, body, timeMs)
+        writeExif(full, header, body, timeMs, spot)
         raw.delete()
 
         val gallery = if (toGallery) runCatching { copyToGallery(app, full, name, timeMs) }.getOrNull() else null
-        val note = Note(0, timeMs, header.trim(), body.trim(), emails, full.absolutePath, thumb.absolutePath, gallery?.toString())
+        val note = Note(
+            0, timeMs, header.trim(), body.trim(), emails, full.absolutePath, thumb.absolutePath, gallery?.toString(),
+            visitId = visitId, lat = spot?.lat, lng = spot?.lng, place = spot?.place
+        )
         val id = store.insert(note)
-        note.copy(id = id)
+        note.copy(id = id, visitId = if (visitId > 0) visitId else id)
     }
 
-    private fun writeExif(file: File, header: String, body: String, timeMs: Long) = runCatching {
+    private fun writeExif(file: File, header: String, body: String, timeMs: Long, spot: Spot?) = runCatching {
         val ex = ExifInterface(file.absolutePath)
         val stamp = SimpleDateFormat("yyyy:MM:dd HH:mm:ss", Locale.US).format(Date(timeMs))
         ex.setAttribute(ExifInterface.TAG_SOFTWARE, "Wiz Snap Notes")
@@ -122,6 +128,8 @@ object PhotoPipeline {
         ex.setAttribute(ExifInterface.TAG_DATETIME, stamp)
         ex.setAttribute(ExifInterface.TAG_DATETIME_ORIGINAL, stamp)
         ex.setAttribute(ExifInterface.TAG_IMAGE_DESCRIPTION, listOf(header, body).filter { it.isNotBlank() }.joinToString(" | ").take(1800))
+        // Gallery and map apps place the photo from these tags.
+        if (spot != null) ex.setLatLong(spot.lat, spot.lng)
         ex.saveAttributes()
     }
 
